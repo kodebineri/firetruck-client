@@ -1,0 +1,274 @@
+@import url('https://fonts.googleapis.com/css2?family=Roboto&family=Roboto+Mono&display=swap');
+/* header start */
+.App header{
+  display: flex;
+  padding: 8px;
+}
+.App header input{
+  font-family: 'Roboto';
+  font-size: 11px;
+  padding: 4px 8px;
+  flex: 1;
+  background: #F6F6F6;
+  border-radius: 4px;
+  border: 1px solid #C4C4C4;
+  margin-right: 8px;
+  height: 16px;
+}
+.App header input::placeholder{
+  color: #C4C4C4;
+}
+
+.App header button{
+  box-shadow: 0px 2px 2px 0px #00000040;
+}
+
+.App header button:nth-child(2){
+  padding: 4px 8px;
+  border: 1px solid #FFA715;
+  font-family: 'Roboto';
+  font-size: 11px;
+  background: #FFFFFF;
+  color: #FFA715;
+  border-radius: 4px;
+  margin-right: 8px;
+  height: 24px;
+}
+.App header button:nth-child(3){
+  padding: 4px 24px;
+  background: #FFA715;
+  color: white;
+  border-radius: 4px;
+  border: none;
+  margin-right: 8px;
+  height: 24px;
+  font-size: 11px;
+}
+.App header button:nth-child(4){
+  padding: 4px 8px;
+  border: 1px solid #FFA715;
+  font-family: 'Roboto';
+  font-size: 11px;
+  background: #FFFFFF;
+  color: #FFA715;
+  border-radius: 4px;
+}
+.App header button .icon{
+  margin-right: 8px;
+}
+/* header end */
+/* content start */
+/* sidebar start */
+.App .content{
+  display: flex;
+}
+.App .content .sidebar{
+  flex: 0.25;
+}
+.App .content .sidebar h3{
+  font-family: 'Roboto';
+  font-weight: bold;
+  font-size: 12px;
+  margin: 0;
+  margin-left: 8px;
+}
+.App .content .sidebar ul{
+  margin-left: -40px;
+  margin-top: 8px;
+}
+.App .content .sidebar ul a{
+  text-decoration: none;
+  color: black;
+}
+.App .content .sidebar ul li{
+  list-style: none;
+  font-family: 'Roboto';
+  font-size: 12px;
+  margin-bottom: 8px;
+  cursor: pointer;
+  padding: 4px;
+}
+.App .content .sidebar ul li.active{
+  font-weight: bold;
+  background: #FFA715;
+  color: white;
+}
+.App .content .sidebar ul li .icon{
+  margin-right: 8px;
+}
+/* sidebar end */
+/* table start */
+.App .content .table{
+  flex: 1;
+  height: 500px;
+  overflow: auto;
+}
+.App .content .table table{
+  border-collapse: collapse;
+  width: 100%;
+}
+.App .content .table table thead{
+  background: #C4C4C4;
+}
+.App .content .table table thead td{
+  padding: 4px;
+  font-family: 'Roboto';
+  font-size: 12px;
+  font-weight: bold;
+  min-width: 100px;
+  border-right: 1px solid white;
+}
+.App .content .table table tbody tr{
+  border-bottom: 1px solid #C4C4C4;
+}
+.App .content .table table tbody tr:nth-child(2n){
+  background: #F6F6F6;
+}
+.App .content .table table tbody td{
+  padding: 4px;
+  margin: 0;
+  font-family: 'Roboto Mono';
+  font-size: 11px;
+  border-right: 1px solid #C4C4C4;
+}
+/* table end */
+/* content end */
+/* footer start*/
+.App footer{
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: #FFF3D0;
+  display: flex;
+  padding: 8px;
+  flex-direction: row;
+}
+.App footer button{
+  border: none;
+  font-family: Roboto;
+  font-size: 10px;
+  font-style: normal;
+  font-weight: 700;
+  line-height: 12px;
+  letter-spacing: 0em;
+  text-align: left;
+  text-transform: uppercase;
+  background: none;
+  cursor: pointer;
+}
+.App footer .spacer{
+  flex: 1;
+}
+.App footer button .icon{
+  margin-right: 8px;
+}
+/* footer end */
+/* popup start */
+.App .bg-popup{
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.App .bg-popup .popup-container{
+  background: white;
+  width: 480px;
+  padding: 16px;
+  padding-right: 8px;
+  border-radius: 4px;
+}
+.App .bg-popup .popup-container h2{
+  font-family: Roboto;
+  font-size: 24px;
+  font-style: normal;
+  font-weight: 300;
+  line-height: 28px;
+  letter-spacing: 0em;
+  text-align: left;
+  margin: 0;
+  margin-bottom: 16px;
+}
+.App .bg-popup .popup-container h3{
+  font-family: Roboto;
+  font-size: 18px;
+  font-style: normal;
+  font-weight: 300;
+  line-height: 28px;
+  letter-spacing: 0em;
+  text-align: left;
+  margin: 0;
+  margin-bottom: 8px;
+}
+.App .bg-popup .popup-container .form-group{
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 8px;
+}
+.App .bg-popup .popup-container .form-group .inline{
+  display: flex;
+  flex-direction: row;
+}
+.App .bg-popup .popup-container .form-group label{
+  font-family: Roboto;
+  font-size: 12px;
+  font-style: normal;
+  font-weight: 400;
+  line-height: 14px;
+  letter-spacing: 0em;
+  text-align: left;
+  flex: 0 0 100%;
+  margin-bottom: 4px;
+}
+.App .bg-popup .popup-container .form-group input{
+  font-family: 'Roboto';
+  font-size: 11px;
+  padding: 4px 8px;
+  flex: 1;
+  border-radius: 4px;
+  border: 1px solid #C4C4C4;
+  margin-right: 8px;
+  height: 16px;
+}
+.App .bg-popup .popup-container .form-group input::placeholder{
+  color: #C4C4C4;
+}
+.App .bg-popup .popup-container .form-group textarea{
+  font-family: 'Roboto';
+  font-size: 11px;
+  padding: 4px 8px;
+  flex: 1;
+  border-radius: 4px;
+  border: 1px solid #C4C4C4;
+  margin-right: 8px;
+}
+.App .bg-popup .popup-container .form-group textarea::placeholder{
+  color: #C4C4C4;
+}
+.App .bg-popup .popup-container button{
+  padding: 4px 8px;
+  border: 1px solid #FFA715;
+  font-family: 'Roboto';
+  font-size: 11px;
+  background: #FFFFFF;
+  color: #FFA715;
+  border-radius: 4px;
+  margin-right: 8px;
+  height: 24px;
+}
+.App .bg-popup .popup-container button.active{
+  background: #FFA715;
+  color: white;
+  border: none;
+}
+.App .bg-popup .popup-container .navigation{
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 16px;
+}
+/* popup end */
