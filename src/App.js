@@ -162,7 +162,7 @@ function App() {
   }
 
   useEffect(() => {
-    document.title = 'FireTruck v1.0'
+    document.title = 'FireTruk v0.1.0'
     // fetchData()
     ipcRenderer.on('renameCollectionAction', (event, arg) => {
       if(activeColl == null){
