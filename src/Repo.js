@@ -172,11 +172,12 @@ const Repo = {
       collId
     })
   },
-  importCsv: async (collId) => {
+  importCsv: async (collId, options) => {
     const path = ipcRenderer.sendSync('browseInputDirectory')
     await ipcRenderer.sendSync('importCSV', {
       path,
-      collId
+      collId,
+      options
     })
   },
   addCollection: async ({collId, docId, data}) => {

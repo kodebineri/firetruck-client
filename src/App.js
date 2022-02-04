@@ -2,7 +2,7 @@ import './App.css';
 import {useState, useEffect} from 'react'
 import Repo from './Repo'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import {faPlay, faUpload, faFolder, faDownload, faPlus} from '@fortawesome/free-solid-svg-icons'
+import {faPlay, faUpload, faFolder, faDownload, faPlus, faSync} from '@fortawesome/free-solid-svg-icons'
 const { ipcRenderer } = window.require('electron')
 
 function App() {
@@ -11,6 +11,7 @@ function App() {
   const [headers, setHeaders] = useState([])
   const [path, setPath] = useState(null)
   const [activeColl, setActiveColl] = useState(null)
+  const [refreshable, setRefreshable] = useState(false)
   const [formAddDocument, setFormAddDocument] = useState({
     collId: null,
     docId: null,
@@ -20,6 +21,7 @@ function App() {
     delimiter: ',',
     quote: '"'
   })
+  const [autoId, setAutoId] = useState(false)
   const [newName, setNewName] = useState('')
   const [showAddPopup, setShowAddPopup] = useState(false)
   const [showRenamePopup, setShowRenamePopup] = useState(false)
@@ -104,15 +106,17 @@ function App() {
     setHeaders(heads)
   }
   const browseServiceAccount = async () => {
+    setRefreshable(false)
     const newpath = await Repo.browseServiceAccount()
     setPath(newpath)
   }
   const exportJson = async () => {
-    Repo.exportJson(activeColl)
-    // Repo.exportCSV(activeColl)
+    // Repo.exportJson(activeColl)
+    Repo.exportCSV(activeColl)
   }
   const importCsv = async () => {
-    await Repo.importCsv(activeColl)
+    await Repo.importCsv(activeColl, importOption)
+    setShowImportPopup(false)
     fetchData()
   }
   const refresh = async () => {
@@ -120,6 +124,7 @@ function App() {
     setCollections([])
     setDocuments([])
     setHeaders([])
+    setRefreshable(true)
     await fetchData()
   }
   const addCollection = async () => {
@@ -179,6 +184,34 @@ function App() {
     })
   }, [])
 
+  const renderInputAutoId = () => {
+    if(autoId){
+      return <input type='text' placeholder='e.g. 123' disabled value={formAddDocument.docId} onChange={(e) => setFormAddDocument({
+        ...formAddDocument,
+        docId: e.target.value
+      })} />
+    }else{
+      return <input type='text' placeholder='e.g. 123' value={formAddDocument.docId} onChange={(e) => setFormAddDocument({
+        ...formAddDocument,
+        docId: e.target.value
+      })} />
+    }
+  }
+
+  const renderButtonAutoId = () => {
+    if(autoId){
+      return <button className='active' onClick={() => {
+        setFormAddDocument({
+          ...formAddDocument,
+          docId: null
+        })
+        setAutoId(false)
+      }}>Auto ID</button>
+    }else{
+      return <button onClick={() => setAutoId(true) }>Auto ID</button>
+    }
+  }
+
   const renderPopup = () => {
     if (showAddPopup) {
       return <div className='bg-popup'>
@@ -195,14 +228,8 @@ function App() {
           <div className='form-group'>
             <label>ID</label>
             <div className='inline'>
-              <input type='text' placeholder='e.g. 123' value={formAddDocument.docId} onChange={(e) => setFormAddDocument({
-                ...formAddDocument,
-                docId: e.target.value
-              })} />
-              <button onClick={() =>setFormAddDocument({
-                ...formAddDocument,
-                docId: null
-              })}>Auto ID</button>
+              {renderInputAutoId()}
+              {renderButtonAutoId()}
             </div>
           </div>
           <div className='form-group'>
@@ -269,6 +296,14 @@ function App() {
     }
   }
 
+  const renderImportButton = () => {
+    if(activeColl !== null){
+      return <button className='active' onClick={() => importCsv()}>
+        Select CSV and Import
+      </button>
+    }
+  }
+
   const renderImportPopup = () => {
     if (showImportPopup) {
       return <div className='bg-popup'>
@@ -276,15 +311,19 @@ function App() {
           <h2>Import CSV to {activeColl}</h2>
           <div className='form-group'>
             <label>Delimiter</label>
-            <input type='text' placeholder='e.g. MY_COLL' value={newName} onChange={(e) => setNewName(e.target.value)} />
+            <select value={importOption.delimiter} onChange={(e) => setImportOption({
+              delimiter: e.target.value
+            })}>
+              <option value=','>, (comma)</option>
+              <option value=';'>; (semicolon)</option>
+              <option value='\t'>\t (tab)</option>
+            </select>
           </div>
           <div className='navigation'>
             <button onClick={() => setShowImportPopup(false)}>
               Cancel
             </button>
-            <button className='active' onClick={() => importCsv()}>
-              Start Import
-            </button>
+            {renderImportButton()}
           </div>
         </div>
       </div>
@@ -310,17 +349,27 @@ function App() {
     }
   }
 
+  const renderStartButton = () => {
+    if(refreshable){
+      return <button className='active' onClick={() => refresh()}>
+        <FontAwesomeIcon icon={faSync} />
+      </button>
+    }else{
+      return <button className='active' onClick={() => refresh()}>
+        <FontAwesomeIcon icon={faPlay} />
+      </button>
+    }
+  }
+
   return (
     <div className="App">
       <header>
         <input type="text" placeholder='path to service account json...' value={path} />
         <button onClick={() => browseServiceAccount()}>Browse...</button>
-        <button className='active' onClick={() => refresh()}>
-          <FontAwesomeIcon icon={faPlay} />
-        </button>
+        {renderStartButton()}
         <button onClick={() => setShowImportPopup(true)}>
           <FontAwesomeIcon icon={faUpload} className='icon' />
-          Import
+          Import CSV
         </button>
       </header>
       <div className='content'>
@@ -347,7 +396,7 @@ function App() {
         <div className='spacer'></div>
         <button onClick={() => exportJson()}>
           <FontAwesomeIcon icon={faDownload} className='icon' />
-          export
+          export csv
         </button>
       </footer>
       {renderPopup()}
