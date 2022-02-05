@@ -145,40 +145,79 @@ const Repo = {
     const path = ipcRenderer.sendSync('browseServiceAccount')
     return path
   },
-  exportJson: (collId) => {
-    const path = ipcRenderer.sendSync('browseOutputDirectory')
-    const timeElapsed = Date.now()
-    const today = new Date(timeElapsed)
-    ipcRenderer.send('exportJson', {
-      filename: collId + '-' + today.toISOString(),
-      path,
-      collId
-    })
-  },
-  importJson: async (collId) => {
+  browseInputDirectory: () => {
     const path = ipcRenderer.sendSync('browseInputDirectory')
-    await ipcRenderer.sendSync('importJson', {
-      path,
-      collId
-    })
+    return path
   },
-  exportCSV: (collId) => {
+  browseOutputDirectory: () => {
     const path = ipcRenderer.sendSync('browseOutputDirectory')
-    const timeElapsed = Date.now()
-    const today = new Date(timeElapsed)
-    ipcRenderer.send('exportCSV', {
-      filename: collId + '-' + today.toISOString(),
-      path,
-      collId
-    })
+    return path
   },
-  importCsv: async (collId, options) => {
-    const path = ipcRenderer.sendSync('browseInputDirectory')
-    await ipcRenderer.sendSync('importCSV', {
-      path,
-      collId,
-      options
-    })
+  exportJson: (collId, path, filename) => {
+    if(path == null){
+      const newpath = ipcRenderer.sendSync('browseOutputDirectory')
+      const timeElapsed = Date.now()
+      const today = new Date(timeElapsed)
+      ipcRenderer.send('exportJson', {
+        filename: collId + '-' + today.toISOString(),
+        path: newpath,
+        collId
+      })
+    }else{
+      ipcRenderer.send('exportJson', {
+        filename,
+        path,
+        collId
+      })
+    }
+  },
+  importJson: async (collId, path) => {
+    if(path == null){
+      const newpath = ipcRenderer.sendSync('browseInputDirectory')
+      await ipcRenderer.sendSync('importJson', {
+        path: newpath,
+        collId
+      })
+    }else{
+      await ipcRenderer.sendSync('importJson', {
+        path,
+        collId
+      })
+    }
+  },
+  exportCSV: (collId, path, filename) => {
+    if(path == null){
+      const newpath = ipcRenderer.sendSync('browseOutputDirectory')
+      const timeElapsed = Date.now()
+      const today = new Date(timeElapsed)
+      ipcRenderer.send('exportCSV', {
+        filename: collId + '-' + today.toISOString(),
+        path: newpath,
+        collId
+      })
+    }else{
+      ipcRenderer.send('exportCSV', {
+        filename,
+        path,
+        collId
+      })
+    }
+  },
+  importCsv: async (collId, options, path) => {
+    if(path == null){
+      const newpath = ipcRenderer.sendSync('browseInputDirectory')
+      await ipcRenderer.sendSync('importCSV', {
+        path: newpath,
+        collId,
+        options
+      })
+    }else{
+      await ipcRenderer.sendSync('importCSV', {
+        path,
+        collId,
+        options
+      })
+    }
   },
   addCollection: async ({collId, docId, data}) => {
     await ipcRenderer.sendSync('addCollection', {

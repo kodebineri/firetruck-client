@@ -10,6 +10,11 @@ function App() {
   const [documents, setDocuments] = useState([])
   const [headers, setHeaders] = useState([])
   const [path, setPath] = useState(null)
+  const [importPath, setImportPath] = useState(null)
+  const [importFileType, setImportFileType] = useState('csv')
+  const [exportPath, setExportPath] = useState(null)
+  const [exportFileType, setExportFileType] = useState('csv')
+  const [exportFilename, setExportFilename] = useState('')
   const [activeColl, setActiveColl] = useState(null)
   const [refreshable, setRefreshable] = useState(false)
   const [formAddDocument, setFormAddDocument] = useState({
@@ -28,6 +33,7 @@ function App() {
   const [showDuplicatePopup, setShowDuplicatePopup] = useState(false)
   const [showDeletePopup, setShowDeletePopup] = useState(false)
   const [showImportPopup, setShowImportPopup] = useState(false)
+  const [showExportPopup, setShowExportPopup] = useState(false)
 
   const generateKeyValue = (key, value) => {
     return `${key}:${value}` 
@@ -110,12 +116,27 @@ function App() {
     const newpath = await Repo.browseServiceAccount()
     setPath(newpath)
   }
-  const exportJson = async () => {
-    // Repo.exportJson(activeColl)
-    Repo.exportCSV(activeColl)
+  const browseImportPath = async () => {
+    const newpath = await Repo.browseInputDirectory()
+    setImportPath(newpath)
   }
-  const importCsv = async () => {
-    await Repo.importCsv(activeColl, importOption)
+  const browseExportPath = async () => {
+    const newpath = await Repo.browseOutputDirectory()
+    setExportPath(newpath)
+  }
+  const doExport = async () => {
+    if(exportFileType === 'csv'){
+      Repo.exportCSV(activeColl, exportPath, exportFilename + '.' + exportFileType)
+    }else{
+      Repo.exportJson(activeColl, exportPath, exportFilename + '.' + exportFileType)
+    }
+  }
+  const doImport = async () => {
+    if(importFileType === 'csv'){
+      await Repo.importCsv(activeColl, importOption, importPath)
+    }else{
+      await Repo.importJson(activeColl, importPath)
+    }
     setShowImportPopup(false)
     fetchData()
   }
@@ -298,9 +319,44 @@ function App() {
 
   const renderImportButton = () => {
     if(activeColl !== null){
-      return <button className='active' onClick={() => importCsv()}>
-        Select CSV and Import
+      return <button className='active' onClick={() => doImport()}>
+        Import
       </button>
+    }
+  }
+
+  const renderExportButton = () => {
+    if(activeColl !== null){
+      return <button className='active' onClick={() => doExport()}>
+        Export
+      </button>
+    }
+  }
+
+  const renderImportDelimiter = () => {
+    if(importFileType === 'csv'){
+      return <div className='form-group'>
+        <label>Delimiter</label>
+        <select value={importOption.delimiter} onChange={(e) => setImportOption({
+          delimiter: e.target.value
+        })}>
+          <option value=','>, (comma)</option>
+          <option value=';'>; (semicolon)</option>
+          <option value='\t'>\t (tab)</option>
+        </select>
+      </div>
+    }
+  }
+
+  const renderImportWarning = () => {
+    if(activeColl == null){
+      return <div className='warning'>Please select a collection to import</div>
+    }
+  }
+
+  const renderExportWarning = () => {
+    if(activeColl == null){
+      return <div className='warning'>Please select a collection to export</div>
     }
   }
 
@@ -308,22 +364,63 @@ function App() {
     if (showImportPopup) {
       return <div className='bg-popup'>
         <div className='popup-container'>
-          <h2>Import CSV to {activeColl}</h2>
+        {renderImportWarning()}
+          <h2>Import to {activeColl}</h2>
           <div className='form-group'>
-            <label>Delimiter</label>
-            <select value={importOption.delimiter} onChange={(e) => setImportOption({
-              delimiter: e.target.value
-            })}>
-              <option value=','>, (comma)</option>
-              <option value=';'>; (semicolon)</option>
-              <option value='\t'>\t (tab)</option>
+            <label>File Type</label>
+            <select value={importFileType} onChange={(e) => setImportFileType(e.target.value)}>
+              <option value='csv'>CSV</option>
+              <option value='json'>JSON</option>
             </select>
+          </div>
+          {renderImportDelimiter()}
+          <div className='form-group'>
+            <label>Input Path</label>
+            <div className='inline'>
+              <input type="text" placeholder='import from path...' value={importPath} />
+              <button onClick={() => browseImportPath()}>Browse...</button>
+            </div>
           </div>
           <div className='navigation'>
             <button onClick={() => setShowImportPopup(false)}>
               Cancel
             </button>
             {renderImportButton()}
+          </div>
+        </div>
+      </div>
+    }
+  }
+
+  const renderExportPopup = () => {
+    if (showExportPopup) {
+      return <div className='bg-popup'>
+        <div className='popup-container'>
+          {renderExportWarning()}
+          <h2>Export from {activeColl}</h2>
+          <div className='form-group'>
+            <label>File Type</label>
+            <select value={exportFileType} onChange={(e) => setExportFileType(e.target.value)}>
+              <option value='csv'>CSV</option>
+              <option value='json'>JSON</option>
+            </select>
+          </div>
+          <div className='form-group'>
+            <label>Filename</label>
+            <input type="text" placeholder="filename..." value={exportFilename} onChange={(e) => setExportFilename(e.target.value)} />
+          </div>
+          <div className='form-group'>
+            <label>Output Path</label>
+            <div className='inline'>
+              <input type="text" placeholder="export to path..." value={exportPath} />
+              <button onClick={() => browseExportPath()}>Browse...</button>
+            </div>
+          </div>
+          <div className='navigation'>
+            <button onClick={() => setShowExportPopup(false)}>
+              Cancel
+            </button>
+            {renderExportButton()}
           </div>
         </div>
       </div>
@@ -369,7 +466,7 @@ function App() {
         {renderStartButton()}
         <button onClick={() => setShowImportPopup(true)}>
           <FontAwesomeIcon icon={faUpload} className='icon' />
-          Import CSV
+          Import
         </button>
       </header>
       <div className='content'>
@@ -394,9 +491,14 @@ function App() {
           Add Collection
         </button>
         <div className='spacer'></div>
-        <button onClick={() => exportJson()}>
+        <button onClick={() => {
+          const timeElapsed = Date.now()
+          const today = new Date(timeElapsed)
+          setExportFilename(activeColl + '-' + today.toISOString())
+          setShowExportPopup(true)
+        }}>
           <FontAwesomeIcon icon={faDownload} className='icon' />
-          export csv
+          export
         </button>
       </footer>
       {renderPopup()}
@@ -404,6 +506,7 @@ function App() {
       {renderDuplicatePopup()}
       {renderDeletePopup()}
       {renderImportPopup()}
+      {renderExportPopup()}
     </div>
   );
 }
