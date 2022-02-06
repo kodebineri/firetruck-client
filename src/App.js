@@ -247,7 +247,7 @@ function App() {
   }
 
   useEffect(() => {
-    document.title = 'FireTruk v0.1.0'
+    document.title = 'FireTruck Firestore Manager v0.1.0'
     // fetchData()
     ipcRenderer.on('renameCollectionAction', (event, arg) => {
       if(activeColl == null){

@@ -7,7 +7,12 @@ const Repo = {
   },
   getCollections: async () => {
     const data = await ipcRenderer.sendSync('getCollections')
-    return data
+    if(data.success){
+      return data.data
+    }else{
+      console.log(data.message)
+      return data.data
+    }
   },
   getDocuments: async (collId, query) => {
     const data = await ipcRenderer.sendSync('getDocuments', {collId, query})
@@ -28,16 +33,31 @@ const Repo = {
     }
   },
   browseServiceAccount: () => {
-    const path = ipcRenderer.sendSync('browseServiceAccount')
-    return path
+    const data = ipcRenderer.sendSync('browseServiceAccount')
+    if(data.success){
+      return data.data
+    }else{
+      console.log(data.message)
+      return data.data
+    }
   },
   browseInputDirectory: () => {
-    const path = ipcRenderer.sendSync('browseInputDirectory')
-    return path
+    const data = ipcRenderer.sendSync('browseInputDirectory')
+    if(data.success){
+      return data.data
+    }else{
+      console.log(data.message)
+      return data.data
+    }
   },
   browseOutputDirectory: () => {
-    const path = ipcRenderer.sendSync('browseOutputDirectory')
-    return path
+    const data = ipcRenderer.sendSync('browseOutputDirectory')
+    if(data.success){
+      return data.data
+    }else{
+      console.log(data.message)
+      return data.data
+    }
   },
   exportJson: (collId, path, filename) => {
     if(path == null){
