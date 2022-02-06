@@ -5,141 +5,27 @@ const Repo = {
   init: (val) => {
     ipcRenderer.send('init', val)
   },
-  // getCollections: async () => {
-  //   return new Promise((resolve, reject) => {
-  //     setTimeout(() => {
-  //       resolve([
-  //         {
-  //           id: 'COLL1'
-  //         },
-  //         {
-  //           id: 'COLL2'
-  //         },
-  //         {
-  //           id: 'COLL3'
-  //         }
-  //       ])
-  //     }, 300)
-  //   })
-  // },
   getCollections: async () => {
     const data = await ipcRenderer.sendSync('getCollections')
     return data
   },
-  // getDocuments: async (collId, limit = 100, offset = 0) => {
-  //   return new Promise((resolve, reject) => {
-  //     setTimeout(() => {
-  //       resolve([
-  //         {
-  //           id: 'abc',
-  //           title: 'Lorem ipsum',
-  //           content: 'dolor sit amet'
-  //         },
-  //         {
-  //           id: 'def',
-  //           title: 'Lorem ipsum 2',
-  //           content: 'dolor sit amet',
-  //           extra: 'boost'
-  //         },
-  //         {
-  //           id: 'ghi',
-  //           title: 'Lorem ipsum 3',
-  //           content: 'dolor sit amet'
-  //         },
-  //         {
-  //           id: 'jkl',
-  //           title: 'Lorem ipsum 3',
-  //           content: ['testing', 'testing 2']
-  //         },
-  //         {
-  //           id: 'jkl',
-  //           title: 'Lorem ipsum 3',
-  //           content: ['testing', {
-  //             key: 1,
-  //             value: 2
-  //           }]
-  //         },
-  //         {
-  //           id: 'ghi2',
-  //           title: 'Lorem ipsum 3',
-  //           content: 'dolor sit amet'
-  //         },
-  //         {
-  //           id: 'ghi3',
-  //           title: 'Lorem ipsum 3',
-  //           content: 'dolor sit amet'
-  //         },
-  //         {
-  //           id: 'ghi4',
-  //           title: 'Lorem ipsum 3',
-  //           content: 'dolor sit amet'
-  //         },
-  //         {
-  //           id: 'ghi5',
-  //           title: 'Lorem ipsum 3',
-  //           content: 'dolor sit amet'
-  //         },
-  //         {
-  //           id: 'ghi6',
-  //           title: 'Lorem ipsum 3',
-  //           content: 'dolor sit amet'
-  //         },
-  //         {
-  //           id: 'ghi7',
-  //           title: 'Lorem ipsum 3',
-  //           content: 'dolor sit amet'
-  //         },
-  //         {
-  //           id: 'ghi8',
-  //           title: 'Lorem ipsum 3',
-  //           content: 'dolor sit amet'
-  //         },
-  //         {
-  //           id: 'ghi9',
-  //           title: 'Lorem ipsum 3',
-  //           content: 'dolor sit amet'
-  //         },
-  //         {
-  //           id: 'ghi10',
-  //           title: 'Lorem ipsum 3',
-  //           content: 'dolor sit amet'
-  //         },
-  //         {
-  //           id: 'ghi11',
-  //           title: 'Lorem ipsum 3',
-  //           content: 'dolor sit amet'
-  //         },
-  //         {
-  //           id: 'ghi12',
-  //           title: 'Lorem ipsum 3',
-  //           content: 'dolor sit amet'
-  //         },
-  //         {
-  //           id: 'ghi13',
-  //           title: 'Lorem ipsum 3',
-  //           content: 'dolor sit amet'
-  //         },
-  //         {
-  //           id: 'ghi14',
-  //           title: 'Lorem ipsum 3',
-  //           content: 'dolor sit amet'
-  //         },
-  //         {
-  //           id: 'ghi15',
-  //           title: 'Lorem ipsum 3',
-  //           content: 'dolor sit amet',
-  //           content2: 'dolor sit amet',
-  //           content3: 'dolor sit amet',
-  //           content4: 'dolor sit amet',
-  //           content5: 'dolor sit amet'
-  //         },
-  //       ])
-  //     }, 300)
-  //   })
-  // },
-  getDocuments: async (collId, limit = 100, offset = 0) => {
-    const data = await ipcRenderer.sendSync('getDocuments', collId)
-    return data
+  getDocuments: async (collId, query) => {
+    const data = await ipcRenderer.sendSync('getDocuments', {collId, query})
+    if(data.success){
+      return data.data
+    }else{
+      console.log(data.message)
+      return data.data
+    }
+  },
+  getDocumentById: async (collId, docId) => {
+    const data = await ipcRenderer.sendSync('getDocumentById', {collId, docId})
+    if(data.success){
+      return data.data
+    }else{
+      console.log(data.message)
+      return data.data
+    }
   },
   browseServiceAccount: () => {
     const path = ipcRenderer.sendSync('browseServiceAccount')
@@ -236,7 +122,27 @@ const Repo = {
   },
   deleteCollection: async (collId) => {
     await ipcRenderer.sendSync('deleteCollection', collId)
-  }
+  },
+  addDocument: async ({collId, docId, data}) => {
+    await ipcRenderer.sendSync('addDocument', {
+      collId, docId, data
+    })
+  },
+  editDocument: async ({collId, docId, data}) => {
+    await ipcRenderer.sendSync('editDocument', {
+      collId, docId, data
+    })
+  },
+  deleteDocument: async ({collId, docId}) => {
+    await ipcRenderer.sendSync('deleteDocument', {
+      collId, docId
+    })
+  },
+  duplicateDocument: async ({collId, docId, newDocId}) => {
+    await ipcRenderer.sendSync('duplicateDocument', {
+      collId, docId, newDocId
+    })
+  },
 }
 
 export default Repo

@@ -2,19 +2,25 @@
 button{
   cursor: pointer;
 }
+.App{
+  background: #292d34;
+}
 /* header start */
 .App header{
   display: flex;
   padding: 8px;
+  border-bottom: 1px solid #14161A;
 }
 .App header input{
   font-family: 'Roboto';
   font-size: 11px;
   padding: 4px 8px;
   flex: 1;
-  background: #F6F6F6;
+  /* background: #F6F6F6; */
+  background: #14161A;
+  color: white;
   border-radius: 4px;
-  border: 1px solid #C4C4C4;
+  border: 1px solid #353A44;
   margin-right: 8px;
   height: 16px;
 }
@@ -31,7 +37,7 @@ button{
   border: 1px solid #FFA715;
   font-family: 'Roboto';
   font-size: 11px;
-  background: #FFFFFF;
+  background: #292d34;
   color: #FFA715;
   border-radius: 4px;
   margin-right: 8px;
@@ -52,7 +58,7 @@ button{
   border: 1px solid #FFA715;
   font-family: 'Roboto';
   font-size: 11px;
-  background: #FFFFFF;
+  background: #292d34;
   color: #FFA715;
   border-radius: 4px;
 }
@@ -68,6 +74,10 @@ button{
 .App .content .sidebar{
   flex: 0.25;
   color: #202020;
+  padding-top: 8px;
+  height: 86vh;
+  overflow: auto;
+  border-right: 1px solid #14161A;
 }
 .App .content .sidebar h3{
   font-family: 'Roboto';
@@ -75,6 +85,7 @@ button{
   font-size: 12px;
   margin: 0;
   margin-left: 8px;
+  color: white;
 }
 .App .content .sidebar ul{
   margin-left: -40px;
@@ -82,7 +93,7 @@ button{
 }
 .App .content .sidebar ul a{
   text-decoration: none;
-  color: black;
+  color: white;
 }
 .App .content .sidebar ul li{
   list-style: none;
@@ -91,6 +102,7 @@ button{
   margin-bottom: 8px;
   cursor: pointer;
   padding: 4px;
+  padding-left: 10px;
 }
 .App .content .sidebar ul li.active{
   font-weight: bold;
@@ -106,13 +118,48 @@ button{
   flex: 1;
   height: 500px;
   overflow: auto;
+  color: white;
+}
+.App .content .table .inline{
+  display: flex;
+  flex-direction: row;
+  /* background: #FFF3D0; */
+  background: #292d34;
+  padding-left: 8px;
+  padding-top: 8px;
+  border-bottom: 1px solid #292d34;
+}
+.App .content .table textarea{
+  font-family: 'Roboto';
+  font-size: 11px;
+  padding: 4px 8px;
+  flex: 1;
+  border-radius: 4px;
+  border: 1px solid #353A44;
+  margin-right: 8px;
+  color: #202020;
+  margin-bottom: 8px;
+  background: #14161A;
+  color: white;
+}
+.App .content .table button{
+  padding: 4px 8px;
+  border: 1px solid #FFA715;
+  font-family: 'Roboto';
+  font-size: 11px;
+  background: #292d34;
+  color: #FFA715;
+  border-radius: 4px;
+  margin-right: 8px;
+  height: 24px;
+  box-shadow: 0px 2px 2px 0px #00000040;
 }
 .App .content .table table{
   border-collapse: collapse;
   width: 100%;
 }
 .App .content .table table thead{
-  background: #C4C4C4;
+  background: #14161A;
 }
 .App .content .table table thead td{
   padding: 4px;
@@ -120,20 +167,24 @@ button{
   font-size: 12px;
   font-weight: bold;
   min-width: 100px;
-  border-right: 1px solid white;
+  border-right: 1px solid 14161A;
 }
 .App .content .table table tbody tr{
-  border-bottom: 1px solid #C4C4C4;
+  border-bottom: 1px solid #14161A;
 }
 .App .content .table table tbody tr:nth-child(2n){
-  background: #F6F6F6;
+  background: #353A44;
 }
 .App .content .table table tbody td{
   padding: 4px;
   margin: 0;
   font-family: 'Roboto Mono';
   font-size: 11px;
-  border-right: 1px solid #C4C4C4;
+  border-right: 1px solid #14161A;
+}
+.App .content .table table tbody td a{
+  text-decoration: none;
+  color: #90b061;
 }
 /* table end */
 /* content end */
@@ -143,11 +194,12 @@ button{
   bottom: 0;
   left: 0;
   right: 0;
-  background: #FFF3D0;
+  /* background: #FFF3D0; */
+  background: #9DA39D;
   display: flex;
   padding: 8px;
   flex-direction: row;
-  color: #202020;
+  border-top: 1px solid #14161A;
 }
 .App footer button{
   border: none;
@@ -161,6 +213,7 @@ button{
   text-transform: uppercase;
   background: none;
   cursor: pointer;
+  color: #292D34;
 }
 .App footer .spacer{
   flex: 1;
@@ -182,7 +235,7 @@ button{
   justify-content: center;
 }
 .App .bg-popup .popup-container{
-  background: white;
+  background: #292D34;
   width: 480px;
   padding: 16px;
   padding-right: 8px;
@@ -207,7 +260,7 @@ button{
   text-align: left;
   margin: 0;
   margin-bottom: 16px;
-  color: #202020;
+  color: white;
 }
 .App .bg-popup .popup-container h3{
   font-family: Roboto;
@@ -219,7 +272,7 @@ button{
   text-align: left;
   margin: 0;
   margin-bottom: 8px;
-  color: #202020;
+  color: white;
 }
 .App .bg-popup .popup-container .form-group{
   display: flex;
@@ -240,7 +293,7 @@ button{
   text-align: left;
   flex: 0 0 100%;
   margin-bottom: 4px;
-  color: #202020;
+  color: white;
 }
 .App .bg-popup .popup-container .form-group input{
   font-family: 'Roboto';
@@ -248,10 +301,14 @@ button{
   padding: 4px 8px;
   flex: 1;
   border-radius: 4px;
-  border: 1px solid #C4C4C4;
+  border: 1px solid #353A44;
   margin-right: 8px;
   height: 16px;
-  color: #202020;
+  background: #14161A;
+  color: white;
+}
+.App .bg-popup .popup-container .form-group input:disabled{
+  background: #353A44;
 }
 .App .bg-popup .popup-container .form-group select{
   font-family: 'Roboto';
@@ -259,10 +316,11 @@ button{
   padding: 4px 8px;
   flex: 1;
   border-radius: 4px;
-  border: 1px solid #C4C4C4;
+  border: 1px solid #353A44;
   margin-right: 8px;
   height: 16px;
-  color: #202020;
+  color: white;
+  background: #14161A;
 }
 .App .bg-popup .popup-container .form-group input::placeholder{
   color: #C4C4C4;
@@ -273,9 +331,10 @@ button{
   padding: 4px 8px;
   flex: 1;
   border-radius: 4px;
-  border: 1px solid #C4C4C4;
+  border: 1px solid #353A44;
   margin-right: 8px;
-  color: #202020;
+  color: white;
+  background: #14161A;
 }
 .App .bg-popup .popup-container .form-group textarea::placeholder{
   color: #C4C4C4;
@@ -285,7 +344,7 @@ button{
   border: 1px solid #FFA715;
   font-family: 'Roboto';
   font-size: 11px;
-  background: #FFFFFF;
+  background: #292d34;
   color: #FFA715;
   border-radius: 4px;
   margin-right: 8px;
@@ -302,3 +361,11 @@ button{
   margin-top: 16px;
 }
 /* popup end */
+
+/* @media (prefers-color-scheme: dark) {
+  body { background: #333; color: white; }
+}
+
+@media (prefers-color-scheme: light) {
+  body { background: #ddd; color: black; }
+} */

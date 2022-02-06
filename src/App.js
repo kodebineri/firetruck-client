@@ -2,7 +2,7 @@ import './App.css';
 import {useState, useEffect} from 'react'
 import Repo from './Repo'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import {faPlay, faUpload, faFolder, faDownload, faPlus, faSync} from '@fortawesome/free-solid-svg-icons'
+import {faPlay, faUpload, faFolder, faDownload, faSync, faFile} from '@fortawesome/free-solid-svg-icons'
 const { ipcRenderer } = window.require('electron')
 
 function App() {
@@ -16,6 +16,7 @@ function App() {
   const [exportFileType, setExportFileType] = useState('csv')
   const [exportFilename, setExportFilename] = useState('')
   const [activeColl, setActiveColl] = useState(null)
+  const [activeDoc, setActiveDoc] = useState(null)
   const [refreshable, setRefreshable] = useState(false)
   const [formAddDocument, setFormAddDocument] = useState({
     collId: null,
@@ -27,11 +28,15 @@ function App() {
     quote: '"'
   })
   const [autoId, setAutoId] = useState(false)
+  const [query, setQuery] = useState('')
   const [newName, setNewName] = useState('')
   const [showAddPopup, setShowAddPopup] = useState(false)
+  const [showAddDocumentPopup, setShowAddDocumentPopup] = useState(false)
+  const [showEditDocumentPopup, setShowEditDocumentPopup] = useState(false)
   const [showRenamePopup, setShowRenamePopup] = useState(false)
   const [showDuplicatePopup, setShowDuplicatePopup] = useState(false)
   const [showDeletePopup, setShowDeletePopup] = useState(false)
+  const [showDeleteDocumentPopup, setShowDeleteDocumentPopup] = useState(false)
   const [showImportPopup, setShowImportPopup] = useState(false)
   const [showExportPopup, setShowExportPopup] = useState(false)
 
@@ -66,12 +71,20 @@ function App() {
   }
   const renderRow = (item) => {
     return headers.map((key, index) => {
-      if(item[key]){
-        return <td key={index}>{
-          renderRowStyle(key, JSON.stringify(item[key]))
-        }</td>
+      if(key === '_id'){
+        return <td key={index}>
+          <a href={'doc:' + activeColl + '.' + item[key]}>
+            {item[key]}
+          </a>
+        </td>
       }else{
-        return <td key={index}></td>
+        if(item[key]){
+          return <td key={index}>{
+            renderRowStyle(key, JSON.stringify(item[key]))
+          }</td>
+        }else{
+          return <td key={index}></td>
+        }
       }
     })
   }
@@ -107,6 +120,13 @@ function App() {
     const colls = await Repo.getCollections()
     setCollections(colls)
     const docs = await Repo.getDocuments()
+    setDocuments(docs)
+    const heads = generateHeader(docs)
+    setHeaders(heads)
+  }
+  const executeQuery = async () => {
+    await Repo.init(path)
+    const docs = await Repo.getDocuments(activeColl, query)
     setDocuments(docs)
     const heads = generateHeader(docs)
     setHeaders(heads)
@@ -158,6 +178,28 @@ function App() {
     await fetchData()
   }
 
+  const addDocument = async () => {
+    const payload = {
+      collId: activeColl,
+      docId: activeDoc,
+      data: JSON.parse(formAddDocument.data)
+    }
+    await Repo.addDocument(payload)
+    setShowAddDocumentPopup(false)
+    await refreshData()
+  }
+
+  const editDocument = async () => {
+    const payload = {
+      collId: activeColl,
+      docId: activeDoc,
+      data: JSON.parse(formAddDocument.data)
+    }
+    await Repo.editDocument(payload)
+    setShowEditDocumentPopup(false)
+    await refreshData()
+  }
+
   const renameCollection = async () => {
     await Repo.renameCollection({
       collId: activeColl,
@@ -182,6 +224,28 @@ function App() {
     await fetchData()
   }
 
+  const deleteDocument = async () => {
+    await Repo.deleteDocument({
+      collId: activeColl,
+      docId: activeDoc
+    })
+    setShowDeleteDocumentPopup(false)
+    await refreshData()
+  }
+
+  const refreshData = async () => {
+    let docs = []
+    if(query != null){
+      docs = await Repo.getDocuments(activeColl, query)
+      setDocuments(docs)
+    }else{
+      docs = await Repo.getDocuments(activeColl)
+      setDocuments(docs)
+    }
+    const heads = generateHeader(docs)
+    setHeaders(heads)
+  }
+
   useEffect(() => {
     document.title = 'FireTruk v0.1.0'
     // fetchData()
@@ -202,6 +266,38 @@ function App() {
         setActiveColl(arg)
       }
       setShowDeletePopup(true)
+    })
+    ipcRenderer.on('deleteDocumentAction', (event, arg) => {
+      const collDoc = arg.split('.')
+      const collId = collDoc[0]
+      const docId = collDoc[1]
+      setActiveDoc(docId)
+      setShowDeleteDocumentPopup(true)
+    })
+    ipcRenderer.on('editDocumentAction', async (event, arg) => {
+      const collDoc = arg.split('.')
+      const collId = collDoc[0]
+      const docId = collDoc[1]
+      setActiveDoc(docId)
+      const data = await Repo.getDocumentById(collId, docId)
+      delete data._id
+      setFormAddDocument({
+        ...formAddDocument,
+        data: JSON.stringify(data, undefined, 4)
+      })
+      setShowDeletePopup(false)
+      setShowEditDocumentPopup(true)
+    })
+    ipcRenderer.on('duplicateDocumentAction', async (event, arg) => {
+      console.log(arg)
+      const collDoc = arg.split('.')
+      const collId = collDoc[0]
+      const docId = collDoc[1]
+      await Repo.duplicateDocument({
+        collId,
+        docId
+      })
+      await refreshData()
     })
   }, [])
 
@@ -258,13 +354,70 @@ function App() {
             <textarea rows={17} placeholder='e.g. {"name": "Harry Potter","city": "London"}' onChange={(e) => setFormAddDocument({
               ...formAddDocument,
               data: e.target.value
-            })}>{formAddDocument.data}</textarea>
+            })} defaultValue={formAddDocument.data}></textarea>
           </div>
           <div className='navigation'>
             <button onClick={() => setShowAddPopup(false)}>
               Cancel
             </button>
             <button className='active' onClick={() => addCollection()}>
+              Save
+            </button>
+          </div>
+        </div>
+      </div>
+    }
+  }
+
+  const renderAddDocumentPopup = () => {
+    if (showAddDocumentPopup) {
+      return <div className='bg-popup'>
+        <div className='popup-container'>
+          <h2>Add New Document</h2>
+          <div className='form-group'>
+            <label>ID</label>
+            <div className='inline'>
+              {renderInputAutoId()}
+              {renderButtonAutoId()}
+            </div>
+          </div>
+          <div className='form-group'>
+            <label>Data</label>
+            <textarea rows={17} placeholder='e.g. {"name": "Harry Potter","city": "London"}' onChange={(e) => setFormAddDocument({
+              ...formAddDocument,
+              data: e.target.value
+            })} defaultValue={formAddDocument.data}></textarea>
+          </div>
+          <div className='navigation'>
+            <button onClick={() => setShowAddDocumentPopup(false)}>
+              Cancel
+            </button>
+            <button className='active' onClick={() => addDocument()}>
+              Save
+            </button>
+          </div>
+        </div>
+      </div>
+    }
+  }
+
+  const renderEditDocumentPopup = () => {
+    if (showEditDocumentPopup) {
+      return <div className='bg-popup'>
+        <div className='popup-container'>
+          <h2>Edit Document {activeDoc}</h2>
+          <div className='form-group'>
+            <label>Data</label>
+            <textarea rows={17} placeholder='e.g. {"name": "Harry Potter","city": "London"}' onChange={(e) => setFormAddDocument({
+              ...formAddDocument,
+              data: e.target.value
+            })} defaultValue={formAddDocument.data}></textarea>
+          </div>
+          <div className='navigation'>
+            <button onClick={() => setShowEditDocumentPopup(false)}>
+              Cancel
+            </button>
+            <button className='active' onClick={() => editDocument()}>
               Save
             </button>
           </div>
@@ -446,6 +599,25 @@ function App() {
     }
   }
 
+  const renderDeleteDocumentPopup = () => {
+    if (showDeleteDocumentPopup) {
+      return <div className='bg-popup'>
+        <div className='popup-container'>
+          <h2>Delete Document {activeDoc}</h2>
+          <p>Are you sure want to delete this document?</p>
+          <div className='navigation'>
+            <button onClick={() => setShowDeleteDocumentPopup(false)}>
+              No
+            </button>
+            <button className='active' onClick={() => deleteDocument()}>
+              Yes
+            </button>
+          </div>
+        </div>
+      </div>
+    }
+  }
+
   const renderStartButton = () => {
     if(refreshable){
       return <button className='active' onClick={() => refresh()}>
@@ -475,6 +647,11 @@ function App() {
           <ul>{renderCollections()}</ul>
         </div>
         <div className='table'>
+          <div className='inline'>
+            <textarea onChange={(e) => setQuery(e.target.value)} placeholder='Enter query here...' defaultValue={query}>
+            </textarea>
+            <button onClick={() => executeQuery()}>Execute</button>
+          </div>
           <table>
             <thead>
               <tr>{renderHeaders()}</tr>
@@ -487,8 +664,12 @@ function App() {
       </div>
       <footer>
         <button onClick={() => setShowAddPopup(true)}>
-          <FontAwesomeIcon icon={faPlus} className='icon' />
+          <FontAwesomeIcon icon={faFolder} className='icon' />
           Add Collection
+        </button>
+        <button onClick={() => setShowAddDocumentPopup(true)} style={{marginLeft: 48}}>
+          <FontAwesomeIcon icon={faFile} className='icon' />
+          Add Document
         </button>
         <div className='spacer'></div>
         <button onClick={() => {
@@ -502,9 +683,12 @@ function App() {
         </button>
       </footer>
       {renderPopup()}
+      {renderAddDocumentPopup()}
       {renderRenamePopup()}
       {renderDuplicatePopup()}
       {renderDeletePopup()}
+      {renderDeleteDocumentPopup()}
+      {renderEditDocumentPopup()}
       {renderImportPopup()}
       {renderExportPopup()}
     </div>
