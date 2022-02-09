@@ -1,4 +1,5 @@
 import './App.css';
+import loading from './loading.gif';
 import {useState, useEffect} from 'react'
 import Repo from './Repo'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
@@ -30,6 +31,7 @@ function App() {
   const [autoId, setAutoId] = useState(false)
   const [query, setQuery] = useState('')
   const [newName, setNewName] = useState('')
+  const [error, setError] = useState('there are no error')
   const [showAddPopup, setShowAddPopup] = useState(false)
   const [showAddDocumentPopup, setShowAddDocumentPopup] = useState(false)
   const [showEditDocumentPopup, setShowEditDocumentPopup] = useState(false)
@@ -39,6 +41,8 @@ function App() {
   const [showDeleteDocumentPopup, setShowDeleteDocumentPopup] = useState(false)
   const [showImportPopup, setShowImportPopup] = useState(false)
   const [showExportPopup, setShowExportPopup] = useState(false)
+  const [showLoadingPopup, setShowLoadingPopup] = useState(false)
+  const [showErrorPopup, setShowErrorPopup] = useState(false)
 
   const generateKeyValue = (key, value) => {
     return `${key}:${value}` 
@@ -125,11 +129,13 @@ function App() {
     setHeaders(heads)
   }
   const executeQuery = async () => {
+    setShowLoadingPopup(true)
     await Repo.init(path)
     const docs = await Repo.getDocuments(activeColl, query)
     setDocuments(docs)
     const heads = generateHeader(docs)
     setHeaders(heads)
+    setShowLoadingPopup(false)
   }
   const browseServiceAccount = async () => {
     setRefreshable(false)
@@ -145,13 +151,16 @@ function App() {
     setExportPath(newpath)
   }
   const doExport = async () => {
+    setShowLoadingPopup(true)
     if(exportFileType === 'csv'){
       Repo.exportCSV(activeColl, exportPath, exportFilename + '.' + exportFileType)
     }else{
       Repo.exportJson(activeColl, exportPath, exportFilename + '.' + exportFileType)
     }
+    setShowLoadingPopup(false)
   }
   const doImport = async () => {
+    setShowLoadingPopup(true)
     if(importFileType === 'csv'){
       await Repo.importCsv(activeColl, importOption, importPath)
     }else{
@@ -159,16 +168,20 @@ function App() {
     }
     setShowImportPopup(false)
     fetchData()
+    setShowLoadingPopup(false)
   }
   const refresh = async () => {
+    setShowLoadingPopup(true)
     setActiveColl(null)
     setCollections([])
     setDocuments([])
     setHeaders([])
     setRefreshable(true)
     await fetchData()
+    setShowLoadingPopup(false)
   }
   const addCollection = async () => {
+    setShowLoadingPopup(true)
     const payload = {
       ...formAddDocument,
       data: JSON.parse(formAddDocument.data)
@@ -176,9 +189,11 @@ function App() {
     await Repo.addCollection(payload)
     setShowAddPopup(false)
     await fetchData()
+    setShowLoadingPopup(false)
   }
 
   const addDocument = async () => {
+    setShowLoadingPopup(true)
     const payload = {
       collId: activeColl,
       docId: activeDoc,
@@ -187,9 +202,11 @@ function App() {
     await Repo.addDocument(payload)
     setShowAddDocumentPopup(false)
     await refreshData()
+    setShowLoadingPopup(false)
   }
 
   const editDocument = async () => {
+    setShowLoadingPopup(true)
     const payload = {
       collId: activeColl,
       docId: activeDoc,
@@ -198,39 +215,48 @@ function App() {
     await Repo.editDocument(payload)
     setShowEditDocumentPopup(false)
     await refreshData()
+    setShowLoadingPopup(false)
   }
 
   const renameCollection = async () => {
+    setShowLoadingPopup(true)
     await Repo.renameCollection({
       collId: activeColl,
       newName
     })
     setShowRenamePopup(false)
     await fetchData()
+    setShowLoadingPopup(false)
   }
 
   const duplicateCollection = async () => {
+    setShowLoadingPopup(true)
     await Repo.duplicateCollection({
       collId: activeColl,
       newName
     })
     setShowDuplicatePopup(false)
     await fetchData()
+    setShowLoadingPopup(false)
   }
 
   const deleteCollection = async () => {
+    setShowLoadingPopup(true)
     await Repo.deleteCollection(activeColl)
     setShowDeletePopup(false)
     await fetchData()
+    setShowLoadingPopup(false)
   }
 
   const deleteDocument = async () => {
+    setShowLoadingPopup(true)
     await Repo.deleteDocument({
       collId: activeColl,
       docId: activeDoc
     })
     setShowDeleteDocumentPopup(false)
     await refreshData()
+    setShowLoadingPopup(false)
   }
 
   const refreshData = async () => {
@@ -289,7 +315,6 @@ function App() {
       setShowEditDocumentPopup(true)
     })
     ipcRenderer.on('duplicateDocumentAction', async (event, arg) => {
-      console.log(arg)
       const collDoc = arg.split('.')
       const collId = collDoc[0]
       const docId = collDoc[1]
@@ -298,6 +323,9 @@ function App() {
         docId
       })
       await refreshData()
+    })
+    ipcRenderer.on('error', (event, arg) => {
+      setError(arg)
     })
   }, [])
 
@@ -470,6 +498,32 @@ function App() {
     }
   }
 
+  const renderLoadingPopup = () => {
+    if (showLoadingPopup) {
+      return <div className='bg-popup'>
+        <div className='popup-container loading'>
+          <img src={loading} />
+        </div>
+      </div>
+    }
+  }
+
+  const renderErrorPopup = () => {
+    if (showErrorPopup) {
+      return <div className='bg-popup'>
+        <div className='popup-container error'>
+          <h2>Whoops, an error occured :(</h2>
+          <p>{error}</p>
+          <div className='navigation'>
+            <button onClick={() => setShowErrorPopup(false)}>
+              OK
+            </button>
+          </div>
+        </div>
+      </div>
+    }
+  }
+
   const renderImportButton = () => {
     if(activeColl !== null){
       return <button className='active' onClick={() => doImport()}>
@@ -630,6 +684,21 @@ function App() {
     }
   }
 
+  const renderContentTable = () => {
+    if(documents.length > 0){
+      return <table>
+        <thead>
+          <tr>{renderHeaders()}</tr>
+        </thead>
+        <tbody>
+          {renderDocuments()}
+        </tbody>
+      </table>
+    }else{
+      return <div className='empty'>No data</div>
+    }
+  }
+
   return (
     <div className="App">
       <header>
@@ -652,14 +721,7 @@ function App() {
             </textarea>
             <button onClick={() => executeQuery()}>Execute</button>
           </div>
-          <table>
-            <thead>
-              <tr>{renderHeaders()}</tr>
-            </thead>
-            <tbody>
-              {renderDocuments()}
-            </tbody>
-          </table>
+          {renderContentTable()}
         </div>
       </div>
       <footer>
@@ -691,6 +753,8 @@ function App() {
       {renderEditDocumentPopup()}
       {renderImportPopup()}
       {renderExportPopup()}
+      {renderLoadingPopup()}
+      {renderErrorPopup()}
     </div>
   );
 }
