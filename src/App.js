@@ -67,11 +67,22 @@ function App() {
       }
     })
   }
+  const isJSON = (str) => {
+    try {
+      JSON.parse(str)
+    } catch (e) {
+      return false
+    }
+    return true
+  }
   const renderRowStyle = (key, val) => {
     if(key === '_id'){
       return <b>{val}</b>
+    }else if(isJSON(val)){
+      return JSON.stringify(val)
+    }else{
+      return val
     }
-    return val
   }
   const renderRow = (item) => {
     return headers.map((key, index) => {
@@ -84,7 +95,7 @@ function App() {
       }else{
         if(item[key]){
           return <td key={index}>{
-            renderRowStyle(key, JSON.stringify(item[key]))
+            renderRowStyle(key, item[key])
           }</td>
         }else{
           return <td key={index}></td>
@@ -325,7 +336,8 @@ function App() {
       await refreshData()
     })
     ipcRenderer.on('error', (event, arg) => {
-      setError(arg)
+      setError(arg.toString())
+      setShowErrorPopup(true)
     })
   }, [])
 
@@ -512,7 +524,7 @@ function App() {
     if (showErrorPopup) {
       return <div className='bg-popup'>
         <div className='popup-container error'>
-          <h2>Whoops, an error occured :(</h2>
+          <h3>Whoops, an error occured :(</h3>
           <p>{error}</p>
           <div className='navigation'>
             <button onClick={() => setShowErrorPopup(false)}>
@@ -721,7 +733,9 @@ function App() {
             </textarea>
             <button onClick={() => executeQuery()}>Execute</button>
           </div>
-          {renderContentTable()}
+          <div className='table'>
+            {renderContentTable()}
+          </div>
         </div>
       </div>
       <footer>

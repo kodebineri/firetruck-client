@@ -125,7 +125,7 @@ button{
 .App .content .table{
   flex: 1;
   height: 500px;
-  overflow: auto;
+  overflow: hidden;
   color: white;
 }
 .App .content .table .inline{
@@ -161,6 +161,9 @@ button{
   margin-right: 8px;
   height: 24px;
   box-shadow: 0px 2px 2px 0px #00000040;
+}
+.App .content .table .table{
+  overflow: auto;
 }
 .App .content .table table{
   border-collapse: collapse;
