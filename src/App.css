@@ -72,7 +72,7 @@ button{
   display: flex;
 }
 #sidebarHandle{
-  height: 87vh;
+  height: calc(100vh - 80px);
   cursor: col-resize;
   width: 2px;
 }
@@ -133,8 +133,8 @@ button{
 }
 .App .content .table{
   flex: 1;
-  height: 500px;
-  overflow: hidden;
+  height: calc(100vh - 72px);
+  overflow: auto;
   color: white;
 }
 .App .content .table .inline{
