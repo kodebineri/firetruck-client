@@ -71,11 +71,20 @@ button{
 .App .content{
   display: flex;
 }
+#sidebarHandle{
+  height: 87vh;
+  cursor: col-resize;
+  width: 2px;
+}
+#sidebarHandle:hover{
+  background:#FFA715;
+}
 .App .content .sidebar{
   flex: 0.25;
+  /* width: 100px; */
   color: #202020;
   padding-top: 8px;
-  height: 86vh;
+  height: calc(100vh - 80px);
   overflow: auto;
   border-right: 1px solid #14161A;
 }

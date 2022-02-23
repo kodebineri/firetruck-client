@@ -43,9 +43,27 @@ function App() {
   const [showExportPopup, setShowExportPopup] = useState(false)
   const [showLoadingPopup, setShowLoadingPopup] = useState(false)
   const [showErrorPopup, setShowErrorPopup] = useState(false)
+  // resizable
+  const [initialPos, setInitialPos] = useState(null)
+  const [initialSize, setInitialSize] = useState(null)
+
+  const init = (e) => {
+    let resizable = document.getElementById('sidebar')
+    setInitialPos(e.clientX)
+    setInitialSize(resizable.offsetWidth)
+  }
+
+  const resize = (e) => {
+    let resizable = document.getElementById('sidebar')
+    let sidebarWidth = parseInt(initialSize) + parseInt(e.clientX - initialPos)
+    let flex = Math.round((sidebarWidth / window.innerHeight) * 100) / 100
+    if(flex > 0){
+      resizable.style.flex = flex
+    }
+  }
 
   const generateKeyValue = (key, value) => {
-    return `${key}:${value}` 
+    return `${key}:${value}`
   }
 
   const renderCollections = () => {
@@ -723,11 +741,12 @@ function App() {
         </button>
       </header>
       <div className='content'>
-        <div className='sidebar'>
+        <div className='sidebar' id='sidebar'>
           <h3>Collections</h3>
           <ul>{renderCollections()}</ul>
         </div>
-        <div className='table'>
+        <div id='sidebarHandle' draggable={false} onDragStart={init} onDrag={resize} />
+        <div className='table' id='table'>
           <div className='inline'>
             <textarea onChange={(e) => setQuery(e.target.value)} placeholder='Enter query here...' defaultValue={query}>
             </textarea>
