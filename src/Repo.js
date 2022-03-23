@@ -1,12 +1,15 @@
 // import { ipcRenderer } from "electron"
 const {ipcRenderer} = window.require('electron')
+const { v4: uuidv4 } = require('uuid')
 
 const Repo = {
   init: (val) => {
-    ipcRenderer.send('init', val)
+    const sessionId = uuidv4()
+    localStorage.setItem('sessionId', sessionId)
+    ipcRenderer.send('init', { path: val, sessionId: localStorage.getItem('sessionId') })
   },
   getCollections: async () => {
-    const data = await ipcRenderer.sendSync('getCollections')
+    const data = await ipcRenderer.sendSync('getCollections', { sessionId: localStorage.getItem('sessionId') })
     if(data.success){
       return data.data
     }else{
@@ -15,7 +18,7 @@ const Repo = {
     }
   },
   getDocuments: async (collId, query) => {
-    const data = await ipcRenderer.sendSync('getDocuments', {collId, query})
+    const data = await ipcRenderer.sendSync('getDocuments', {collId, query, sessionId: localStorage.getItem('sessionId')})
     if(data.success){
       return data.data
     }else{
@@ -24,7 +27,7 @@ const Repo = {
     }
   },
   getDocumentById: async (collId, docId) => {
-    const data = await ipcRenderer.sendSync('getDocumentById', {collId, docId})
+    const data = await ipcRenderer.sendSync('getDocumentById', {collId, docId, sessionId: localStorage.getItem('sessionId')})
     if(data.success){
       return data.data
     }else{
@@ -67,13 +70,15 @@ const Repo = {
       ipcRenderer.send('exportJson', {
         filename: collId + '-' + today.toISOString(),
         path: newpath,
-        collId
+        collId,
+        sessionId: localStorage.getItem('sessionId')
       })
     }else{
       ipcRenderer.send('exportJson', {
         filename,
         path,
-        collId
+        collId,
+        sessionId: localStorage.getItem('sessionId')
       })
     }
   },
@@ -82,12 +87,14 @@ const Repo = {
       const newpath = ipcRenderer.sendSync('browseInputDirectory')
       await ipcRenderer.sendSync('importJson', {
         path: newpath,
-        collId
+        collId,
+        sessionId: localStorage.getItem('sessionId')
       })
     }else{
       await ipcRenderer.sendSync('importJson', {
         path,
-        collId
+        collId,
+        sessionId: localStorage.getItem('sessionId')
       })
     }
   },
@@ -99,13 +106,15 @@ const Repo = {
       ipcRenderer.send('exportCSV', {
         filename: collId + '-' + today.toISOString(),
         path: newpath,
-        collId
+        collId,
+        sessionId: localStorage.getItem('sessionId')
       })
     }else{
       ipcRenderer.send('exportCSV', {
         filename,
         path,
-        collId
+        collId,
+        sessionId: localStorage.getItem('sessionId')
       })
     }
   },
@@ -115,52 +124,54 @@ const Repo = {
       await ipcRenderer.sendSync('importCSV', {
         path: newpath,
         collId,
-        options
+        options,
+        sessionId: localStorage.getItem('sessionId')
       })
     }else{
       await ipcRenderer.sendSync('importCSV', {
         path,
         collId,
-        options
+        options,
+        sessionId: localStorage.getItem('sessionId')
       })
     }
   },
   addCollection: async ({collId, docId, data}) => {
     await ipcRenderer.sendSync('addCollection', {
-      collId, docId, data
+      collId, docId, data, sessionId: localStorage.getItem('sessionId')
     })
   },
   renameCollection: async ({collId, newName}) => {
     await ipcRenderer.sendSync('renameCollection', {
-      collId, newName
+      collId, newName, sessionId: localStorage.getItem('sessionId')
     })
   },
   duplicateCollection: async ({collId, newName}) => {
     await ipcRenderer.sendSync('duplicateCollection', {
-      collId, newName
+      collId, newName, sessionId: localStorage.getItem('sessionId')
     })
   },
   deleteCollection: async (collId) => {
-    await ipcRenderer.sendSync('deleteCollection', collId)
+    await ipcRenderer.sendSync('deleteCollection', {collId, sessionId: localStorage.getItem('sessionId')})
   },
   addDocument: async ({collId, docId, data}) => {
     await ipcRenderer.sendSync('addDocument', {
-      collId, docId, data
+      collId, docId, data, sessionId: localStorage.getItem('sessionId')
     })
   },
   editDocument: async ({collId, docId, data}) => {
     await ipcRenderer.sendSync('editDocument', {
-      collId, docId, data
+      collId, docId, data, sessionId: localStorage.getItem('sessionId')
     })
   },
   deleteDocument: async ({collId, docId}) => {
     await ipcRenderer.sendSync('deleteDocument', {
-      collId, docId
+      collId, docId, sessionId: localStorage.getItem('sessionId')
     })
   },
   duplicateDocument: async ({collId, docId, newDocId}) => {
     await ipcRenderer.sendSync('duplicateDocument', {
-      collId, docId, newDocId
+      collId, docId, newDocId, sessionId: localStorage.getItem('sessionId')
     })
   },
 }

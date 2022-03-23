@@ -20,6 +20,7 @@ import ContentTable from './component/ContentTable';
 const { ipcRenderer } = window.require('electron')
 
 function App() {
+  const [sessionId, setSessionId] = useState('')
   const [collections, setCollections] = useState([])
   const [documents, setDocuments] = useState([])
   const [headers, setHeaders] = useState([])
@@ -133,8 +134,13 @@ function App() {
   }
 
   useEffect(() => {
-    document.title = 'FireTruck Firestore Manager v0.1.0'
+    document.title = 'FireTruck Firestore Manager'
     // fetchData()
+    ipcRenderer.on('sessionId', (_, arg) => {
+      console.log('receive sessionId', arg)
+      setSessionId(arg)
+      localStorage.setItem('sessionId', arg)
+    })
     ipcRenderer.on('renameCollectionAction', (_, arg) => {
       if(activeColl == null){
         setActiveColl(arg)

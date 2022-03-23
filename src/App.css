@@ -201,8 +201,14 @@ button{
   font-family: 'Roboto Mono';
   font-size: 11px;
   border-right: 1px solid #14161A;
+  vertical-align: top;
 }
 .App .content .table table tbody td a{
+  text-decoration: none;
+  font-weight: bold;
+  color: #90b061;
+}
+.App .content .table table tbody td i{
   text-decoration: none;
   color: #90b061;
 }

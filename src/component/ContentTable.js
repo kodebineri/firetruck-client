@@ -21,10 +21,13 @@ function ContentTable (props) {
   const renderRowStyle = (key, val) => {
     if(key === '_id'){
       return <b>{val}</b>
-    }else if(isJSON(val)){
-      return JSON.stringify(val)
+    }else if(val._seconds !== undefined){
+      const date = new Date(0)
+      date.setSeconds(val._seconds)
+      date.setMilliseconds(val._nanoseconds / 1000000)
+      return <i>{date.toISOString()}</i>
     }else{
-      return val
+      return JSON.stringify(val)
     }
   }
 
