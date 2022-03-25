@@ -8,6 +8,9 @@ const Repo = {
     localStorage.setItem('sessionId', sessionId)
     ipcRenderer.send('init', { path: val, sessionId: localStorage.getItem('sessionId') })
   },
+  sendError: (error) => {
+    ipcRenderer.send('error', error)
+  },
   getCollections: async () => {
     const data = await ipcRenderer.sendSync('getCollections', { sessionId: localStorage.getItem('sessionId') })
     if(data.success){

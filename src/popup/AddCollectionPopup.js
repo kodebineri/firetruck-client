@@ -11,11 +11,15 @@ function AddCollectionPopup (props) {
 
   const addCollection = async () => {
     props.onWaiting()
-    const payload = {
-      ...formAddDocument,
-      data: JSON.parse(formAddDocument.data)
+    try{
+      const payload = {
+        ...formAddDocument,
+        data: JSON.parse(formAddDocument.data)
+      }
+      await Repo.addCollection(payload)
+    }catch(e){
+      Repo.sendError('Wrong data format, please use JSON-formatted data, e.g. {"key": "value"}')
     }
-    await Repo.addCollection(payload)
     props.onSuccess()
   }
 

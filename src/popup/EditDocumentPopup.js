@@ -6,12 +6,16 @@ function EditDocumentPopup (props) {
 
   const editDocument = async () => {
     props.onWaiting()
-    const payload = {
-      collId: props.activeColl,
-      docId: props.activeDoc,
-      data: JSON.parse(form)
+    try{
+      const payload = {
+        collId: props.activeColl,
+        docId: props.activeDoc,
+        data: JSON.parse(form)
+      }
+      await Repo.editDocument(payload)
+    }catch(e){
+      Repo.sendError('Invalid data format, please use JSON-formatted data, e.g. {"key": "value"}')
     }
-    await Repo.editDocument(payload)
     props.onSuccess()
   }
 
