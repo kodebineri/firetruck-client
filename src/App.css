@@ -133,7 +133,7 @@ button{
 }
 .App .content .table{
   flex: 1;
-  height: calc(100vh - 72px);
+  height: calc(100vh - 80px);
   overflow: auto;
   color: white;
 }
@@ -224,6 +224,8 @@ button{
   background: #9DA39D;
   display: flex;
   padding: 8px;
+  padding-top: 4px;
+  padding-bottom: 4px;
   flex-direction: row;
   border-top: 1px solid #14161A;
 }
@@ -241,11 +243,37 @@ button{
   cursor: pointer;
   color: #292D34;
 }
+.App footer label{
+  font-family: Roboto;
+  font-size: 10px;
+  font-style: normal;
+  font-weight: 700;
+  line-height: 12px;
+  letter-spacing: 0em;
+  text-align: left;
+  text-transform: uppercase;
+  color: #292D34;
+  margin-top: 6px;
+  margin-left: 8px;
+  margin-right: 8px;
+}
 .App footer .spacer{
   flex: 1;
 }
+.App footer .perpage{
+  border: none;
+  background: #353A44;
+  border-radius: 4px;
+  padding: 4px;
+  color: white;
+  width: 50px;
+}
 .App footer button .icon{
   margin-right: 8px;
+}
+.App footer button.nav .icon{
+  margin-right: 8px;
+  margin-left: 8px;
 }
 /* footer end */
 /* popup start */

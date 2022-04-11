@@ -20,8 +20,8 @@ const Repo = {
       return data.data
     }
   },
-  getDocuments: async (collId, query) => {
-    const data = await ipcRenderer.sendSync('getDocuments', {collId, query, sessionId: localStorage.getItem('sessionId')})
+  getDocuments: async (collId, query, page = 1, perPage = 100) => {
+    const data = await ipcRenderer.sendSync('getDocuments', {collId, query, sessionId: localStorage.getItem('sessionId'), page: parseInt(page), perPage: parseInt(perPage)})
     if(data.success){
       return data.data
     }else{

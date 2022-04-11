@@ -12,7 +12,7 @@ import AddDocumentPopup from './popup/AddDocumentPopup';
 import EditDocumentPopup from './popup/EditDocumentPopup';
 import DeleteDocumentPopup from './popup/DeleteDocumentPopup';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import {faUpload, faFolder, faDownload, faFile} from '@fortawesome/free-solid-svg-icons'
+import {faUpload, faFolder, faDownload, faFile, faChevronRight, faChevronLeft} from '@fortawesome/free-solid-svg-icons'
 import LoadingPopup from './popup/LoadingPopup';
 import ErrorPopup from './popup/ErrorPopup';
 import CollectionList from './component/CollectionList';
@@ -35,6 +35,9 @@ function App() {
   })
   const [query, setQuery] = useState('')
   const [error, setError] = useState('there are no error')
+  const [perPage, setPerPage] = useState(100)
+  const [page, setPage] = useState(1)
+  // popups
   const [showAddPopup, setShowAddPopup] = useState(false)
   const [showAddDocumentPopup, setShowAddDocumentPopup] = useState(false)
   const [showEditDocumentPopup, setShowEditDocumentPopup] = useState(false)
@@ -67,7 +70,7 @@ function App() {
   
   const selectCollection = async (id) => {
     setActiveColl(id)
-    const docs = await Repo.getDocuments(id)
+    const docs = await Repo.getDocuments(id, undefined)
     setDocuments(docs)
     const heads = generateHeader(docs)
     setHeaders(heads)
@@ -89,7 +92,7 @@ function App() {
     await Repo.init(path)
     const colls = await Repo.getCollections()
     setCollections(colls)
-    const docs = await Repo.getDocuments()
+    const docs = await Repo.getDocuments(undefined, undefined)
     setDocuments(docs)
     const heads = generateHeader(docs)
     setHeaders(heads)
@@ -122,16 +125,38 @@ function App() {
 
   const refreshData = async () => {
     let docs = []
-    if(query != ''){
-      docs = await Repo.getDocuments(activeColl, query)
+    if(query !== ''){
+      docs = await Repo.getDocuments(activeColl, query, page, perPage)
       setDocuments(docs)
     }else{
-      docs = await Repo.getDocuments(activeColl)
+      docs = await Repo.getDocuments(activeColl, undefined, page, perPage)
       setDocuments(docs)
     }
     const heads = generateHeader(docs)
     setHeaders(heads)
   }
+
+  const prevPage = () => {
+    if(parseInt(page) - 1 < 1){
+      setPage(1)
+    }else{
+      setPage(parseInt(page) - 1)
+    }
+    refreshData()
+  }
+
+  const nextPage = () => {
+    setPage(parseInt(page) + 1)
+    refreshData()
+  }
+
+  useEffect(() => {
+    refreshData()
+  }, [page])
+
+  useEffect(() => {
+    refreshData()
+  }, [perPage])
 
   useEffect(() => {
     document.title = 'FireTruck Firestore Manager'
@@ -232,6 +257,17 @@ function App() {
         <button onClick={() => setShowAddDocumentPopup(true)} style={{marginLeft: 48}}>
           <FontAwesomeIcon icon={faFile} className='icon' />
           Add Document
+        </button>
+        <div className='spacer'></div>
+        <button onClick={() => prevPage()} className='nav'>
+          <FontAwesomeIcon icon={faChevronLeft} className='icon' />
+        </button>
+        <label>page</label>
+        <input type="number" className='perpage' value={page} onChange={(e) => setPage(e.target.value)} />
+        <label>@</label>
+        <input type="number" className='perpage' value={perPage} onChange={(e) => setPerPage(e.target.value)} />
+        <button onClick={() => nextPage()} className='nav'>
+          <FontAwesomeIcon icon={faChevronRight} className='icon' />
         </button>
         <div className='spacer'></div>
         <button onClick={() => setShowExportPopup(true)}>
