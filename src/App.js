@@ -17,6 +17,7 @@ import LoadingPopup from './popup/LoadingPopup';
 import ErrorPopup from './popup/ErrorPopup';
 import CollectionList from './component/CollectionList';
 import ContentTable from './component/ContentTable';
+import UpdatePopup from './popup/UpdatePopup';
 const { ipcRenderer } = window.require('electron')
 
 function App() {
@@ -37,6 +38,10 @@ function App() {
   const [error, setError] = useState('there are no error')
   const [perPage, setPerPage] = useState(100)
   const [page, setPage] = useState(1)
+  const [changeLog, setChangeLog] = useState({
+    version: null,
+    changes: []
+  }) 
   // popups
   const [showAddPopup, setShowAddPopup] = useState(false)
   const [showAddDocumentPopup, setShowAddDocumentPopup] = useState(false)
@@ -49,6 +54,7 @@ function App() {
   const [showExportPopup, setShowExportPopup] = useState(false)
   const [showLoadingPopup, setShowLoadingPopup] = useState(false)
   const [showErrorPopup, setShowErrorPopup] = useState(false)
+  const [showUpdatePopup, setShowUpdatePopup] = useState(false)
   // resizable
   const [initialPos, setInitialPos] = useState(null)
   const [initialSize, setInitialSize] = useState(null)
@@ -161,6 +167,7 @@ function App() {
   useEffect(() => {
     document.title = 'FireTruck Firestore Manager'
     // fetchData()
+    Repo.checkUpdates()
     ipcRenderer.on('sessionId', (_, arg) => {
       console.log('receive sessionId', arg)
       setSessionId(arg)
@@ -214,9 +221,18 @@ function App() {
       })
       await refreshData()
     })
-    ipcRenderer.on('error', (event, arg) => {
+    ipcRenderer.on('error', (_, arg) => {
       setError(arg.toString())
       setShowErrorPopup(true)
+    })
+    ipcRenderer.on('update-response', (_, arg) => {
+      if(arg.is_available){
+        setChangeLog({
+          version: arg.version,
+          changes: arg.change_logs
+        })
+        setShowUpdatePopup(true)
+      }
     })
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
@@ -320,6 +336,9 @@ function App() {
         setShowLoadingPopup(false)
       }} onAbort={() => setShowExportPopup(false)} />
       <LoadingPopup active={showLoadingPopup} />
+      <UpdatePopup active={showUpdatePopup} version={changeLog.version} changes={changeLog.changes} 
+        url='https://kodebineri.com/download/' 
+        onAbort={() => setShowUpdatePopup(false)} />
       <ErrorPopup active={showErrorPopup} error={error} onClick={() => setShowErrorPopup(false)} />
     </div>
   );

@@ -340,6 +340,9 @@ button{
   margin-bottom: 8px;
   color: white;
 }
+.App .bg-popup .popup-container ul{
+  margin-left: -20px;
+}
 .App .bg-popup .popup-container .form-group{
   display: flex;
   flex-direction: column;
