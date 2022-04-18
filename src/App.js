@@ -18,6 +18,7 @@ import ErrorPopup from './popup/ErrorPopup';
 import CollectionList from './component/CollectionList';
 import ContentTable from './component/ContentTable';
 import UpdatePopup from './popup/UpdatePopup';
+import InfoPopup from './popup/InfoPopup';
 const { ipcRenderer } = window.require('electron')
 
 function App() {
@@ -35,13 +36,17 @@ function App() {
     data: null
   })
   const [query, setQuery] = useState('')
+  const [info, setInfo] = useState({
+    title: '',
+    message: ''
+  })
   const [error, setError] = useState('there are no error')
   const [perPage, setPerPage] = useState(100)
   const [page, setPage] = useState(1)
   const [changeLog, setChangeLog] = useState({
     version: null,
     changes: []
-  }) 
+  })
   // popups
   const [showAddPopup, setShowAddPopup] = useState(false)
   const [showAddDocumentPopup, setShowAddDocumentPopup] = useState(false)
@@ -55,6 +60,7 @@ function App() {
   const [showLoadingPopup, setShowLoadingPopup] = useState(false)
   const [showErrorPopup, setShowErrorPopup] = useState(false)
   const [showUpdatePopup, setShowUpdatePopup] = useState(false)
+  const [showInfoPopup, setShowInfoPopup] = useState(false)
   // resizable
   const [initialPos, setInitialPos] = useState(null)
   const [initialSize, setInitialSize] = useState(null)
@@ -167,7 +173,7 @@ function App() {
   useEffect(() => {
     document.title = 'FireTruck Firestore Manager'
     // fetchData()
-    Repo.checkUpdates()
+    Repo.checkUpdates(false)
     ipcRenderer.on('sessionId', (_, arg) => {
       console.log('receive sessionId', arg)
       setSessionId(arg)
@@ -232,6 +238,14 @@ function App() {
           changes: arg.change_logs
         })
         setShowUpdatePopup(true)
+      }else{
+        if(arg.is_shown){
+          setInfo({
+            title: 'Check for Updates',
+            message: 'You already running the latest version :)'
+          })
+          setShowInfoPopup(true)
+        }
       }
     })
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -340,6 +354,7 @@ function App() {
         url='https://kodebineri.com/download/' 
         onAbort={() => setShowUpdatePopup(false)} />
       <ErrorPopup active={showErrorPopup} error={error} onClick={() => setShowErrorPopup(false)} />
+      <InfoPopup active={showInfoPopup} title={info.title} message={info.message} onClick={() => setShowInfoPopup(false)} />
     </div>
   );
 }

@@ -8,8 +8,8 @@ const Repo = {
     localStorage.setItem('sessionId', sessionId)
     ipcRenderer.send('init', { path: val, sessionId: localStorage.getItem('sessionId') })
   },
-  checkUpdates: () => {
-    ipcRenderer.send('checkUpdates')
+  checkUpdates: (is_shown = false) => {
+    ipcRenderer.send('checkUpdates', is_shown)
   },
   goto: (url) => {
     ipcRenderer.send('goto', url)
