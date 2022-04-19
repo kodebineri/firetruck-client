@@ -17,9 +17,9 @@ function ImportPopup (props) {
   const doImport = async () => {
     props.onWaiting()
     if(importFileType === 'csv'){
-      await Repo.importCsv(props.activeColl, importOption, importPath)
+      await Repo.importCsv(props.sessionId, props.activeColl, importOption, importPath)
     }else{
-      await Repo.importJson(props.activeColl, importPath)
+      await Repo.importJson(props.sessionId, props.activeColl, importPath)
     }
     props.onSuccess()
   }

@@ -14,9 +14,9 @@ function ExportPopup (props) {
   const doExport = async () => {
     props.onWaiting()
     if(exportFileType === 'csv'){
-      Repo.exportCSV(props.activeColl, exportPath, exportFilename + '.' + exportFileType)
+      Repo.exportCSV(props.sessionId, props.activeColl, exportPath, exportFilename + '.' + exportFileType)
     }else{
-      Repo.exportJson(props.activeColl, exportPath, exportFilename + '.' + exportFileType)
+      Repo.exportJson(props.sessionId, props.activeColl, exportPath, exportFilename + '.' + exportFileType)
     }
     props.onSuccess()
   }

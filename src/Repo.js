@@ -1,24 +1,18 @@
-// import { ipcRenderer } from "electron"
-const {ipcRenderer} = window.require('electron')
-const { v4: uuidv4 } = require('uuid')
-
 const Repo = {
-  init: (val) => {
-    const sessionId = uuidv4()
-    localStorage.setItem('sessionId', sessionId)
-    ipcRenderer.send('init', { path: val, sessionId: localStorage.getItem('sessionId') })
+  init: (sessionId, path) => {
+    window.api.send('init', { path, sessionId})
   },
   checkUpdates: (is_shown = false) => {
-    ipcRenderer.send('checkUpdates', is_shown)
+    window.api.send('checkUpdates', is_shown)
   },
   goto: (url) => {
-    ipcRenderer.send('goto', url)
+    window.api.send('goto', url)
   },
   sendError: (error) => {
-    ipcRenderer.send('error', error)
+    window.api.send('error', error)
   },
-  getCollections: async () => {
-    const data = await ipcRenderer.sendSync('getCollections', { sessionId: localStorage.getItem('sessionId') })
+  getCollections: async (sessionId) => {
+    const data = await window.api.sendSync('getCollections', { sessionId })
     if(data.success){
       return data.data
     }else{
@@ -26,8 +20,8 @@ const Repo = {
       return data.data
     }
   },
-  getDocuments: async (collId, query, page = 1, perPage = 100) => {
-    const data = await ipcRenderer.sendSync('getDocuments', {collId, query, sessionId: localStorage.getItem('sessionId'), page: parseInt(page), perPage: parseInt(perPage)})
+  getDocuments: async (sessionId, collId, query, page = 1, perPage = 100) => {
+    const data = await window.api.sendSync('getDocuments', {collId, query, sessionId, page: parseInt(page), perPage: parseInt(perPage)})
     if(data.success){
       return data.data
     }else{
@@ -35,8 +29,8 @@ const Repo = {
       return data.data
     }
   },
-  getDocumentById: async (collId, docId) => {
-    const data = await ipcRenderer.sendSync('getDocumentById', {collId, docId, sessionId: localStorage.getItem('sessionId')})
+  getDocumentById: async (sessionId, collId, docId) => {
+    const data = await window.api.sendSync('getDocumentById', {collId, docId, sessionId})
     if(data.success){
       return data.data
     }else{
@@ -45,7 +39,7 @@ const Repo = {
     }
   },
   browseServiceAccount: () => {
-    const data = ipcRenderer.sendSync('browseServiceAccount')
+    const data = window.api.sendSync('browseServiceAccount')
     if(data.success){
       return data.data
     }else{
@@ -54,7 +48,7 @@ const Repo = {
     }
   },
   browseInputDirectory: () => {
-    const data = ipcRenderer.sendSync('browseInputDirectory')
+    const data = window.api.sendSync('browseInputDirectory')
     if(data.success){
       return data.data
     }else{
@@ -63,7 +57,7 @@ const Repo = {
     }
   },
   browseOutputDirectory: () => {
-    const data = ipcRenderer.sendSync('browseOutputDirectory')
+    const data = window.api.sendSync('browseOutputDirectory')
     if(data.success){
       return data.data
     }else{
@@ -71,116 +65,116 @@ const Repo = {
       return data.data
     }
   },
-  exportJson: (collId, path, filename) => {
+  exportJson: (sessionId, collId, path, filename) => {
     if(path == null){
-      const newpath = ipcRenderer.sendSync('browseOutputDirectory')
+      const newpath = window.api.sendSync('browseOutputDirectory')
       const timeElapsed = Date.now()
       const today = new Date(timeElapsed)
-      ipcRenderer.send('exportJson', {
+      window.api.send('exportJson', {
         filename: collId + '-' + today.toISOString(),
         path: newpath,
         collId,
-        sessionId: localStorage.getItem('sessionId')
+        sessionId
       })
     }else{
-      ipcRenderer.send('exportJson', {
+      window.api.send('exportJson', {
         filename,
         path,
         collId,
-        sessionId: localStorage.getItem('sessionId')
+        sessionId
       })
     }
   },
-  importJson: async (collId, path) => {
+  importJson: async (sessionId, collId, path) => {
     if(path == null){
-      const newpath = ipcRenderer.sendSync('browseInputDirectory')
-      await ipcRenderer.sendSync('importJson', {
+      const newpath = window.api.sendSync('browseInputDirectory')
+      await window.api.sendSync('importJson', {
         path: newpath,
         collId,
-        sessionId: localStorage.getItem('sessionId')
+        sessionId
       })
     }else{
-      await ipcRenderer.sendSync('importJson', {
+      await window.api.sendSync('importJson', {
         path,
         collId,
-        sessionId: localStorage.getItem('sessionId')
+        sessionId
       })
     }
   },
-  exportCSV: (collId, path, filename) => {
+  exportCSV: (sessionId, collId, path, filename) => {
     if(path == null){
-      const newpath = ipcRenderer.sendSync('browseOutputDirectory')
+      const newpath = window.api.sendSync('browseOutputDirectory')
       const timeElapsed = Date.now()
       const today = new Date(timeElapsed)
-      ipcRenderer.send('exportCSV', {
+      window.api.send('exportCSV', {
         filename: collId + '-' + today.toISOString(),
         path: newpath,
         collId,
-        sessionId: localStorage.getItem('sessionId')
+        sessionId
       })
     }else{
-      ipcRenderer.send('exportCSV', {
+      window.api.send('exportCSV', {
         filename,
         path,
         collId,
-        sessionId: localStorage.getItem('sessionId')
+        sessionId
       })
     }
   },
-  importCsv: async (collId, options, path) => {
+  importCsv: async (sessionId, collId, options, path) => {
     if(path == null){
-      const newpath = ipcRenderer.sendSync('browseInputDirectory')
-      await ipcRenderer.sendSync('importCSV', {
+      const newpath = window.api.sendSync('browseInputDirectory')
+      await window.api.sendSync('importCSV', {
         path: newpath,
         collId,
         options,
-        sessionId: localStorage.getItem('sessionId')
+        sessionId
       })
     }else{
-      await ipcRenderer.sendSync('importCSV', {
+      await window.apiwindow.api.sendSync('importCSV', {
         path,
         collId,
         options,
-        sessionId: localStorage.getItem('sessionId')
+        sessionId
       })
     }
   },
-  addCollection: async ({collId, docId, data}) => {
-    await ipcRenderer.sendSync('addCollection', {
-      collId, docId, data, sessionId: localStorage.getItem('sessionId')
+  addCollection: async ({sessionId, collId, docId, data}) => {
+    await window.api.sendSync('addCollection', {
+      collId, docId, data, sessionId
     })
   },
-  renameCollection: async ({collId, newName}) => {
-    await ipcRenderer.sendSync('renameCollection', {
-      collId, newName, sessionId: localStorage.getItem('sessionId')
+  renameCollection: async ({sessionId, collId, newName}) => {
+    await window.api.sendSync('renameCollection', {
+      collId, newName, sessionId
     })
   },
-  duplicateCollection: async ({collId, newName}) => {
-    await ipcRenderer.sendSync('duplicateCollection', {
-      collId, newName, sessionId: localStorage.getItem('sessionId')
+  duplicateCollection: async ({sessionId, collId, newName}) => {
+    await window.api.sendSync('duplicateCollection', {
+      collId, newName, sessionId
     })
   },
-  deleteCollection: async (collId) => {
-    await ipcRenderer.sendSync('deleteCollection', {collId, sessionId: localStorage.getItem('sessionId')})
+  deleteCollection: async (sessionId, collId) => {
+    await window.api.sendSync('deleteCollection', {collId, sessionId})
   },
-  addDocument: async ({collId, docId, data}) => {
-    await ipcRenderer.sendSync('addDocument', {
-      collId, docId, data, sessionId: localStorage.getItem('sessionId')
+  addDocument: async ({sessionId, collId, docId, data}) => {
+    await window.api.sendSync('addDocument', {
+      collId, docId, data, sessionId
     })
   },
-  editDocument: async ({collId, docId, data}) => {
-    await ipcRenderer.sendSync('editDocument', {
-      collId, docId, data, sessionId: localStorage.getItem('sessionId')
+  editDocument: async ({sessionId, collId, docId, data}) => {
+    await window.api.sendSync('editDocument', {
+      collId, docId, data, sessionId
     })
   },
-  deleteDocument: async ({collId, docId}) => {
-    await ipcRenderer.sendSync('deleteDocument', {
-      collId, docId, sessionId: localStorage.getItem('sessionId')
+  deleteDocument: async ({sessionId, collId, docId}) => {
+    await window.api.sendSync('deleteDocument', {
+      collId, docId, sessionId
     })
   },
-  duplicateDocument: async ({collId, docId, newDocId}) => {
-    await ipcRenderer.sendSync('duplicateDocument', {
-      collId, docId, newDocId, sessionId: localStorage.getItem('sessionId')
+  duplicateDocument: async ({sessionId, collId, docId, newDocId}) => {
+    await window.api.sendSync('duplicateDocument', {
+      collId, docId, newDocId, sessionId
     })
   },
 }

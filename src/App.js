@@ -19,14 +19,14 @@ import CollectionList from './component/CollectionList';
 import ContentTable from './component/ContentTable';
 import UpdatePopup from './popup/UpdatePopup';
 import InfoPopup from './popup/InfoPopup';
-const { ipcRenderer } = window.require('electron')
+const { v4: uuidv4 } = require('uuid')
 
 function App() {
   const [sessionId, setSessionId] = useState('')
   const [collections, setCollections] = useState([])
   const [documents, setDocuments] = useState([])
   const [headers, setHeaders] = useState([])
-  const [path, setPath] = useState(null)
+  const [path, setPath] = useState('')
   const [activeColl, setActiveColl] = useState(null)
   const [activeDoc, setActiveDoc] = useState(null)
   const [refreshable, setRefreshable] = useState(false)
@@ -82,7 +82,7 @@ function App() {
   
   const selectCollection = async (id) => {
     setActiveColl(id)
-    const docs = await Repo.getDocuments(id, undefined)
+    const docs = await Repo.getDocuments(sessionId, id, undefined)
     setDocuments(docs)
     const heads = generateHeader(docs)
     setHeaders(heads)
@@ -101,10 +101,10 @@ function App() {
     return ['_id'].concat(Object.keys(header).sort())
   }
   const fetchData = async () => {
-    await Repo.init(path)
-    const colls = await Repo.getCollections()
+    await Repo.init(sessionId, path)
+    const colls = await Repo.getCollections(sessionId)
     setCollections(colls)
-    const docs = await Repo.getDocuments(undefined, undefined)
+    const docs = await Repo.getDocuments(sessionId, undefined, undefined)
     setDocuments(docs)
     const heads = generateHeader(docs)
     setHeaders(heads)
@@ -112,7 +112,7 @@ function App() {
   const executeQuery = async () => {
     setShowLoadingPopup(true)
     await Repo.init(path)
-    const docs = await Repo.getDocuments(activeColl, query)
+    const docs = await Repo.getDocuments(sessionId, activeColl, query)
     setDocuments(docs)
     const heads = generateHeader(docs)
     setHeaders(heads)
@@ -138,10 +138,10 @@ function App() {
   const refreshData = async () => {
     let docs = []
     if(query !== ''){
-      docs = await Repo.getDocuments(activeColl, query, page, perPage)
+      docs = await Repo.getDocuments(sessionId, activeColl, query, page, perPage)
       setDocuments(docs)
     }else{
-      docs = await Repo.getDocuments(activeColl, undefined, page, perPage)
+      docs = await Repo.getDocuments(sessionId, activeColl, undefined, page, perPage)
       setDocuments(docs)
     }
     const heads = generateHeader(docs)
@@ -172,43 +172,39 @@ function App() {
 
   useEffect(() => {
     document.title = 'FireTruck Firestore Manager'
+    setSessionId(uuidv4())
     // fetchData()
     Repo.checkUpdates(false)
-    ipcRenderer.on('sessionId', (_, arg) => {
-      console.log('receive sessionId', arg)
-      setSessionId(arg)
-      localStorage.setItem('sessionId', arg)
-    })
-    ipcRenderer.on('renameCollectionAction', (_, arg) => {
+    window.api.receive('renameCollectionAction', (_, arg) => {
       if(activeColl == null){
         setActiveColl(arg)
       }
       setShowRenamePopup(true)
     })
-    ipcRenderer.on('duplicateCollectionAction', (_, arg) => {
+    window.api.receive('duplicateCollectionAction', (_, arg) => {
       if(activeColl == null){
         setActiveColl(arg)
       }
       setShowDuplicatePopup(true)
     })
-    ipcRenderer.on('deleteCollectionAction', (_, arg) => {
+    window.api.receive('deleteCollectionAction', (_, arg) => {
       if(activeColl == null){
         setActiveColl(arg)
       }
       setShowDeletePopup(true)
     })
-    ipcRenderer.on('deleteDocumentAction', (_, arg) => {
+    window.api.receive('deleteDocumentAction', (_, arg) => {
       const collDoc = arg.split('.')
       const docId = collDoc[1]
       setActiveDoc(docId)
       setShowDeleteDocumentPopup(true)
     })
-    ipcRenderer.on('editDocumentAction', async (_, arg) => {
+    window.api.receive('editDocumentAction', async (_, arg) => {
       const collDoc = arg.split('.')
       const collId = collDoc[0]
       const docId = collDoc[1]
       setActiveDoc(docId)
-      const data = await Repo.getDocumentById(collId, docId)
+      const data = await Repo.getDocumentById(sessionId, collId, docId)
       delete data._id
       setFormAddDocument({
         ...formAddDocument,
@@ -217,7 +213,7 @@ function App() {
       setShowDeletePopup(false)
       setShowEditDocumentPopup(true)
     })
-    ipcRenderer.on('duplicateDocumentAction', async (_, arg) => {
+    window.api.receive('duplicateDocumentAction', async (_, arg) => {
       const collDoc = arg.split('.')
       const collId = collDoc[0]
       const docId = collDoc[1]
@@ -227,11 +223,11 @@ function App() {
       })
       await refreshData()
     })
-    ipcRenderer.on('error', (_, arg) => {
+    window.api.receive('error', (_, arg) => {
       setError(arg.toString())
       setShowErrorPopup(true)
     })
-    ipcRenderer.on('update-response', (_, arg) => {
+    window.api.receive('update-response', (_, arg) => {
       if(arg.is_available){
         setChangeLog({
           version: arg.version,
@@ -254,7 +250,7 @@ function App() {
   return (
     <div className="App">
       <header>
-        <input type="text" placeholder='path to service account json...' value={path} />
+        <input type="text" placeholder='path to service account json...' defaultValue={path} />
         <button onClick={() => browseServiceAccount()}>Browse...</button>
         <StartButton refreshable={refreshable} onClick={() => refresh()} />
         <button onClick={() => setShowImportPopup(true)}>
@@ -305,7 +301,7 @@ function App() {
           export
         </button>
       </footer>
-      <AddCollectionPopup activeColl={activeColl} active={showAddPopup} onWaiting={() => setShowLoadingPopup(true)} onSuccess={async () => {
+      <AddCollectionPopup sessionId={sessionId} activeColl={activeColl} active={showAddPopup} onWaiting={() => setShowLoadingPopup(true)} onSuccess={async () => {
         setShowAddPopup(false)
         await fetchData()
         setShowLoadingPopup(false)
@@ -315,37 +311,37 @@ function App() {
         await refreshData()
         setShowLoadingPopup(false)
       }} onAbort={() => setShowAddDocumentPopup(false)} />
-      <RenameCollectionPopup activeColl={activeColl} active={showRenamePopup} onWaiting={() => setShowLoadingPopup(true)} onSuccess={async () => {
+      <RenameCollectionPopup sessionId={sessionId} activeColl={activeColl} active={showRenamePopup} onWaiting={() => setShowLoadingPopup(true)} onSuccess={async () => {
         setShowRenamePopup(false)
         await fetchData()
         setShowLoadingPopup(false)
       }} onAbort={() => setShowRenamePopup(false)} />
-      <DuplicateCollectionPopup activeColl={activeColl} active={showDuplicatePopup} onWaiting={() => setShowLoadingPopup(true)} onSuccess={async () => {
+      <DuplicateCollectionPopup sessionId={sessionId} activeColl={activeColl} active={showDuplicatePopup} onWaiting={() => setShowLoadingPopup(true)} onSuccess={async () => {
         setShowDuplicatePopup(false)
         await fetchData()
         setShowLoadingPopup(false)
       }} onAbort={() => setShowDuplicatePopup(false)} />
-      <DeleteCollectionPopup activeColl={activeColl} active={showDeletePopup} onWaiting={() => setShowLoadingPopup(true)} onSuccess={async () => {
+      <DeleteCollectionPopup sessionId={sessionId} activeColl={activeColl} active={showDeletePopup} onWaiting={() => setShowLoadingPopup(true)} onSuccess={async () => {
         setShowDeletePopup(false)
         await fetchData()
         setShowLoadingPopup(false)
       }} onAbort={() => setShowDeletePopup(false)} />
-      <DeleteDocumentPopup activeColl={activeColl} activeDoc={activeDoc} active={showDeleteDocumentPopup} onWaiting={() => setShowLoadingPopup(true)} onSuccess={async () => {
+      <DeleteDocumentPopup sessionId={sessionId} activeColl={activeColl} activeDoc={activeDoc} active={showDeleteDocumentPopup} onWaiting={() => setShowLoadingPopup(true)} onSuccess={async () => {
         setShowDeleteDocumentPopup(false)
         await refreshData()
         setShowLoadingPopup(false)
       }} onAbort={() => setShowDeleteDocumentPopup(false)} />
-      <EditDocumentPopup activeColl={activeColl} activeDoc={activeDoc} active={showEditDocumentPopup} data={formAddDocument.data} onWaiting={() => setShowLoadingPopup(true)} onSuccess={async () => {
+      <EditDocumentPopup sessionId={sessionId} activeColl={activeColl} activeDoc={activeDoc} active={showEditDocumentPopup} data={formAddDocument.data} onWaiting={() => setShowLoadingPopup(true)} onSuccess={async () => {
         setShowEditDocumentPopup(false)
         await refreshData()
         setShowLoadingPopup(false)
       }} onAbort={() => setShowEditDocumentPopup(false)} />
-      <ImportPopup activeColl={activeColl} active={showImportPopup} onWaiting={() => setShowLoadingPopup(true)} onSuccess={async () => {
+      <ImportPopup sessionId={sessionId} activeColl={activeColl} active={showImportPopup} onWaiting={() => setShowLoadingPopup(true)} onSuccess={async () => {
         setShowImportPopup(false)
         await fetchData()
         setShowLoadingPopup(false)
       }} onAbort={() => setShowImportPopup(false)} />
-      <ExportPopup activeColl={activeColl} active={showExportPopup} onWaiting={() => setShowLoadingPopup(true)} onSuccess={() => {
+      <ExportPopup sessionId={sessionId} activeColl={activeColl} active={showExportPopup} onWaiting={() => setShowLoadingPopup(true)} onSuccess={() => {
         setShowExportPopup(false)
         setShowLoadingPopup(false)
       }} onAbort={() => setShowExportPopup(false)} />

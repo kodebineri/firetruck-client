@@ -3,6 +3,7 @@ import {useState} from 'react'
 
 function AddCollectionPopup (props) {
   const [formAddDocument, setFormAddDocument] = useState({
+    sessionId: props.sessionId,
     collId: null,
     docId: null,
     data: null

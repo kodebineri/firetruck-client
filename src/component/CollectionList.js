@@ -8,15 +8,15 @@ function CollectionList (props) {
 
   return props.collections.map((item) => {
     if(props.activeColl === item._id){
-      return <a href={generateKeyValue('coll', item._id)} onClick={(e) => e.preventDefault()}>
-        <li key={item._id} onClick={() => props.onClick(item._id)} className='active'>
+      return <a key={item._id} href={generateKeyValue('coll', item._id)} onClick={(e) => e.preventDefault()}>
+        <li onClick={() => props.onClick(item._id)} className='active'>
           <FontAwesomeIcon icon={faFolder} className='icon'/>
           {item._id}
         </li> 
       </a>
     }else{
-      return <a href={generateKeyValue('coll', item._id)} onClick={(e) => e.preventDefault()}>
-        <li key={item._id} onClick={() => props.onClick(item._id)}>
+      return <a key={item._id} href={generateKeyValue('coll', item._id)} onClick={(e) => e.preventDefault()}>
+        <li onClick={() => props.onClick(item._id)}>
           <FontAwesomeIcon icon={faFolder} className='icon'/>
           {item._id}
         </li>

@@ -7,6 +7,7 @@ function RenameCollectionPopup (props) {
   const renameCollection = async () => {
     props.onWaiting()
     await Repo.renameCollection({
+      sessionId: props.sessionId,
       collId: props.activeColl,
       newName
     })

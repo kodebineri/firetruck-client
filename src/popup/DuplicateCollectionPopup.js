@@ -7,6 +7,7 @@ function DuplicateCollectionPopup (props) {
   const duplicateCollection = async () => {
     props.onWaiting()
     await Repo.duplicateCollection({
+      sessionId: props.sessionId,
       collId: props.activeColl,
       newName
     })

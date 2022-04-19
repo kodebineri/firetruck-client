@@ -4,7 +4,7 @@ function DeleteCollectionPopup (props) {
 
   const deleteCollection = async () => {
     props.onWaiting()
-    await Repo.deleteCollection(props.activeColl)
+    await Repo.deleteCollection(props.sessionId, props.activeColl)
     props.onSuccess()
   }
 

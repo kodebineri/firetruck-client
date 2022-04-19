@@ -8,6 +8,7 @@ function EditDocumentPopup (props) {
     props.onWaiting()
     try{
       const payload = {
+        sessionId: props.sessionId,
         collId: props.activeColl,
         docId: props.activeDoc,
         data: JSON.parse(form)

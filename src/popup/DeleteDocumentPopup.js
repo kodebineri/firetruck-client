@@ -4,6 +4,7 @@ function DeleteDocumentPopup (props) {
   const deleteDocument = async () => {
     props.onWaiting()
     await Repo.deleteDocument({
+      sessionId: props.sessionId,
       collId: props.activeColl,
       docId: props.activeDoc
     })
