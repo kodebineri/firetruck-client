@@ -35,7 +35,7 @@ function ContentTable (props) {
     return props.headers.map((key, index) => {
       if(key === '_id'){
         return <td key={index}>
-          <a href={'doc:' + props.activeColl + '.' + item[key]}>
+          <a href={'doc:' + props.activeColl + '/' + item[key] + '/' + props.sessionId}>
             {item[key]}
           </a>
         </td>

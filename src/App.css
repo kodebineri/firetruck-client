@@ -23,6 +23,7 @@ button{
   border: 1px solid #353A44;
   margin-right: 8px;
   height: 16px;
+  /* margin-left: 80px; */
 }
 .App header input::placeholder{
   color: #C4C4C4;

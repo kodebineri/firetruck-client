@@ -100,8 +100,16 @@ function App() {
     })
     return ['_id'].concat(Object.keys(header).sort())
   }
-  const fetchData = async () => {
+  const initData = async () => {
     await Repo.init(sessionId, path)
+    const colls = await Repo.getCollections(sessionId)
+    setCollections(colls)
+    const docs = await Repo.getDocuments(sessionId, undefined, undefined)
+    setDocuments(docs)
+    const heads = generateHeader(docs)
+    setHeaders(heads)
+  }
+  const fetchData = async () => {
     const colls = await Repo.getCollections(sessionId)
     setCollections(colls)
     const docs = await Repo.getDocuments(sessionId, undefined, undefined)
@@ -131,11 +139,24 @@ function App() {
     setDocuments([])
     setHeaders([])
     setRefreshable(true)
-    await fetchData()
+    await initData()
     setShowLoadingPopup(false)
   }
 
   const refreshData = async () => {
+    let docs = []
+    if(query !== ''){
+      docs = await Repo.getDocuments(sessionId, activeColl, query, page, perPage)
+      setDocuments(docs)
+    }else{
+      docs = await Repo.getDocuments(sessionId, activeColl, undefined, page, perPage)
+      setDocuments(docs)
+    }
+    const heads = generateHeader(docs)
+    setHeaders(heads)
+  }
+
+  const refreshDataByParams = async (sessionId, activeColl, query, page, perPage) => {
     let docs = []
     if(query !== ''){
       docs = await Repo.getDocuments(sessionId, activeColl, query, page, perPage)
@@ -194,15 +215,18 @@ function App() {
       setShowDeletePopup(true)
     })
     window.api.receive('deleteDocumentAction', (_, arg) => {
-      const collDoc = arg.split('.')
+      const collDoc = arg.split('/')
       const docId = collDoc[1]
+      setSessionId(collDoc[2])
       setActiveDoc(docId)
       setShowDeleteDocumentPopup(true)
     })
     window.api.receive('editDocumentAction', async (_, arg) => {
-      const collDoc = arg.split('.')
+      const collDoc = arg.split('/')
       const collId = collDoc[0]
       const docId = collDoc[1]
+      const sessionId = collDoc[2]
+      setSessionId(sessionId)
       setActiveDoc(docId)
       const data = await Repo.getDocumentById(sessionId, collId, docId)
       delete data._id
@@ -214,14 +238,16 @@ function App() {
       setShowEditDocumentPopup(true)
     })
     window.api.receive('duplicateDocumentAction', async (_, arg) => {
-      const collDoc = arg.split('.')
+      const collDoc = arg.split('/')
       const collId = collDoc[0]
       const docId = collDoc[1]
+      const sessionId = collDoc[2]
       await Repo.duplicateDocument({
+        sessionId,
         collId,
         docId
       })
-      await refreshData()
+      await refreshDataByParams(sessionId, collId, null, 1, 100)
     })
     window.api.receive('error', (_, arg) => {
       setError(arg.toString())
@@ -271,7 +297,7 @@ function App() {
             <button onClick={() => executeQuery()}>Execute</button>
           </div>
           <div className='table'>
-            <ContentTable documents={documents} headers={headers} activeColl={activeColl} />
+            <ContentTable sessionId={sessionId} documents={documents} headers={headers} activeColl={activeColl} />
           </div>
         </div>
       </div>
@@ -306,7 +332,7 @@ function App() {
         await fetchData()
         setShowLoadingPopup(false)
       }} onAbort={() => setShowAddPopup(false)} />
-      <AddDocumentPopup activeColl={activeColl} activeDoc={activeDoc} active={showAddDocumentPopup} onWaiting={() => setShowLoadingPopup(true)} onSuccess={async () => {
+      <AddDocumentPopup sessionId={sessionId} activeColl={activeColl} activeDoc={activeDoc} active={showAddDocumentPopup} onWaiting={() => setShowLoadingPopup(true)} onSuccess={async () => {
         setShowAddDocumentPopup(false)
         await refreshData()
         setShowLoadingPopup(false)

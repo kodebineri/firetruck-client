@@ -15,6 +15,7 @@ function AddCollectionPopup (props) {
     try{
       const payload = {
         ...formAddDocument,
+        sessionId: props.sessionId,
         data: JSON.parse(formAddDocument.data)
       }
       await Repo.addCollection(payload)
