@@ -119,7 +119,7 @@ function App() {
   }
   const executeQuery = async () => {
     setShowLoadingPopup(true)
-    await Repo.init(path)
+    await Repo.init(sessionId, path)
     const docs = await Repo.getDocuments(sessionId, activeColl, query)
     setDocuments(docs)
     const heads = generateHeader(docs)
